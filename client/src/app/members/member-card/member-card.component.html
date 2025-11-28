@@ -16,7 +16,14 @@
       </li>
       <li class="list-inline-item">
         <button (click)="addLike(member)" class="btn btn-primary">
-          <i class="fa fa-heart"></i>
+          <i
+            class="fa"
+            [ngClass]="
+              member.likedByCurrentUser
+                ? 'fa-heart text-danger'
+                : 'fa-heart-o text-secondary'
+            "
+          ></i>
         </button>
       </li>
       <li class="list-inline-item">

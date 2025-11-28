@@ -10,12 +10,13 @@ namespace API.Controllers;
 public class LikesController : BaseApiController
 {
     private readonly IUnitOfWork _uow;
-    public LikesController()
+    public LikesController(IUnitOfWork uow)
     {
+        _uow = uow;
     }
 
     [HttpPost("{userName}")]
-    public async Task<IActionResult> AddLike(string userName)
+    public async Task<IActionResult> ToggleLike(string userName)
     {
         var sourceUserId = User.GetUserId();
         var likedUser = await _uow.UserRepository.GetUserByUsernameAsync(userName);
@@ -27,8 +28,16 @@ public class LikesController : BaseApiController
 
         var userLike = await _uow.LikesRepository.GetUserLike(sourceUserId, likedUser.Id);
 
-        if (userLike != null) return BadRequest("You already like this user");
+        if (userLike != null)
+        {
+            // 이미 좋아요한 경우: 좋아요 취소(삭제)
+            sourceUser.LikedUsers.Remove(userLike);
+            _uow.LikesRepository.RemoveUserLike(userLike);
+            if (await _uow.Complete()) return Ok(new { liked = false });
+            return BadRequest("Failed to unlike user");
+        }
 
+        // 좋아요 추가
         userLike = new UserLike
         {
             SourceUserId = sourceUserId,
@@ -37,7 +46,7 @@ public class LikesController : BaseApiController
 
         sourceUser.LikedUsers.Add(userLike);
 
-        if (await _uow.Complete()) return Ok();
+        if (await _uow.Complete()) return Ok(new { liked = true });
 
         return BadRequest("Failed to like user");
     }

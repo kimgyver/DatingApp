@@ -38,4 +38,13 @@ export class ListsComponent implements OnInit {
       this.loadLikes();
     }
   }
+
+  onLikeToggled(member: Member) {
+    // unlike 시 목록에서 제거 (liked 목록일 때만)
+    if (!member.likedByCurrentUser && this.predicate === 'liked') {
+      this.members = this.members?.filter(
+        (m) => m.userName !== member.userName
+      );
+    }
+  }
 }

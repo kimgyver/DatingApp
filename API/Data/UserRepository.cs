@@ -21,15 +21,21 @@ public class UserRepository : IUserRepository
 
     public async Task<MemberDto> GetMemberAsync(string userName)
     {
-        return await _context.Users
+        var member = await _context.Users
+            .Include(u => u.LikedByUsers)
             .Where(x => x.UserName == userName)
             .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
             .SingleOrDefaultAsync();
+
+        // 현재 로그인한 사용자의 username을 HttpContext에서 가져와야 함 (Service 계층에서 처리 필요)
+        // 여기서는 임시로 false로 둠
+        member.LikedByCurrentUser = false;
+        return member;
     }
 
     public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams)
     {
-        var query = _context.Users.AsQueryable();
+        var query = _context.Users.Include(u => u.LikedByUsers).AsQueryable();
         query = query.Where(u => u.UserName != userParams.CurrentUsername); // exclude user
         query = query.Where(u => u.Gender == userParams.Gender);    // only opposite gender
 
@@ -44,10 +50,18 @@ public class UserRepository : IUserRepository
             _ => query.OrderByDescending(u => u.LastActive)
         };
 
-        return await PagedList<MemberDto>.CreateAsync(
-            query.AsNoTracking().ProjectTo<MemberDto>(_mapper.ConfigurationProvider),
-            userParams.pageNumber,
-            userParams.PageSize);
+        var members = await query.AsNoTracking().ProjectTo<MemberDto>(_mapper.ConfigurationProvider).ToListAsync();
+
+        // 현재 로그인한 사용자의 id를 구해서, 각 member가 LikedByCurrentUser인지 체크
+        var currentUser = await _context.Users.Include(u => u.LikedUsers).SingleOrDefaultAsync(u => u.UserName == userParams.CurrentUsername);
+        var likedIds = currentUser?.LikedUsers.Select(l => l.TargetUserId).ToHashSet() ?? new HashSet<int>();
+        foreach (var m in members)
+        {
+            m.LikedByCurrentUser = likedIds.Contains(m.Id);
+        }
+
+        return new PagedList<MemberDto>(
+            members, members.Count, userParams.pageNumber, userParams.PageSize);
     }
 
     public async Task<AppUser> GetUserByIdAsync(int id)
