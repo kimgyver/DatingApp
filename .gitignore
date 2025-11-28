@@ -1,0 +1,43 @@
+# .gitignore for .NET + Angular (DatingApp)
+
+# .NET build
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# Angular build
+client/dist/
+client/node_modules/
+client/.angular/
+
+# Environment/Secrets
+*.env
+client/src/environments/environment*.ts
+!client/src/environments/environment.ts
+
+# SSL/Certs
+client/ssl/*.pem
+
+# API build output
+API/wwwroot/browser/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Mono/IDE/DevKit
+.mono/
+
+# Logs
+*.log
+
+# Others
+client/package-lock.json
+client/yarn.lock
+datingapp.db
