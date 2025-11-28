@@ -7,12 +7,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+using API.SignalR;
+using Microsoft.AspNetCore.SignalR;
+
 public class LikesController : BaseApiController
 {
     private readonly IUnitOfWork _uow;
-    public LikesController(IUnitOfWork uow)
+    private readonly IHubContext<PresenceHub> _presenceHub;
+    public LikesController(IUnitOfWork uow, IHubContext<PresenceHub> presenceHub)
     {
         _uow = uow;
+        _presenceHub = presenceHub;
     }
 
     [HttpPost("{userName}")]
@@ -46,7 +51,20 @@ public class LikesController : BaseApiController
 
         sourceUser.LikedUsers.Add(userLike);
 
-        if (await _uow.Complete()) return Ok(new { liked = true });
+
+        if (await _uow.Complete())
+        {
+            // 좋아요 추가 시 상대방이 온라인이면 실시간 알림 전송
+            var connections = await PresenceTracker.GetConnectionsForUser(likedUser.UserName);
+            if (connections != null && connections.Count > 0)
+            {
+                await _presenceHub.Clients.Clients(connections).SendAsync(
+                    "ReceiveLikeNotification",
+                    new { userName = sourceUser.UserName, knownAs = sourceUser.KnownAs }
+                );
+            }
+            return Ok(new { liked = true });
+        }
 
         return BadRequest("Failed to like user");
     }

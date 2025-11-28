@@ -57,6 +57,15 @@ export class PresenceService {
           this.router.navigateByUrl('/members/' + userName + '?tab=Messages')
         );
     });
+
+    this.hubConnection.on('ReceiveLikeNotification', ({ userName, knownAs }) => {
+      this.toastr
+        .info(knownAs + ' liked your profile!')
+        .onTap.pipe(take(1))
+        .subscribe(() =>
+          this.router.navigateByUrl('/members/' + userName)
+        );
+    });
   }
 
   stopHubConnection() {
