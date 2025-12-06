@@ -50,18 +50,26 @@ public class UserRepository : IUserRepository
             _ => query.OrderByDescending(u => u.LastActive)
         };
 
-        var members = await query.AsNoTracking().ProjectTo<MemberDto>(_mapper.ConfigurationProvider).ToListAsync();
+        var membersQuery = query
+            .AsNoTracking()
+            .ProjectTo<MemberDto>(_mapper.ConfigurationProvider);
+
+        // 페이징 처리 추가
+        var pagedMembers = await membersQuery
+            .Skip((userParams.pageNumber - 1) * userParams.PageSize)
+            .Take(userParams.PageSize)
+            .ToListAsync();
 
         // 현재 로그인한 사용자의 id를 구해서, 각 member가 LikedByCurrentUser인지 체크
         var currentUser = await _context.Users.Include(u => u.LikedUsers).SingleOrDefaultAsync(u => u.UserName == userParams.CurrentUsername);
         var likedIds = currentUser?.LikedUsers.Select(l => l.TargetUserId).ToHashSet() ?? new HashSet<int>();
-        foreach (var m in members)
+        foreach (var m in pagedMembers)
         {
             m.LikedByCurrentUser = likedIds.Contains(m.Id);
         }
 
         return new PagedList<MemberDto>(
-            members, members.Count, userParams.pageNumber, userParams.PageSize);
+            pagedMembers, membersQuery.Count(), userParams.pageNumber, userParams.PageSize);
     }
 
     public async Task<AppUser> GetUserByIdAsync(int id)

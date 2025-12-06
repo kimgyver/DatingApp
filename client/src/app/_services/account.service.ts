@@ -48,10 +48,21 @@ export class AccountService {
   }
 
   setCurrentUser(user: User) {
+    // 토큰 만료 체크
+    const tokenPayload = this.getDecodedToken(user.token);
+    console.log('tokenPayload', tokenPayload);
+    const exp = tokenPayload.exp;
+    const now = Math.floor(Date.now() / 1000);
+    if (exp && exp < now) {
+      this.logout();
+      // 필요시 라우터로 로그인 페이지 이동
+      // this.router.navigate(['/login']);
+      return;
+    }
+
     user.roles = [];
     const roles = this.getDecodedToken(user.token).role;
     user.roles = Array.isArray(roles) ? roles : [roles];
-    console.log('user.roles', user.roles);
     localStorage.setItem('user', JSON.stringify(user));
     this.currentUserSource.next(user);
     this.presenceService.createHubConnection(user);
