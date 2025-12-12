@@ -59,9 +59,15 @@ public class UsersController : BaseApiController
         if (user == null) return NotFound();
 
         _mapper.Map(memberUpdateDto, user);
+
+        if (!_uow.HasChanges())
+        {
+            return BadRequest("No changes detected");
+        }
+
         if (await _uow.Complete()) return NoContent();
 
-        return BadRequest("Failed to update user");
+        return BadRequest("Failed to update user. Please check your input data.");
     }
 
     [HttpPost("add-photo")]

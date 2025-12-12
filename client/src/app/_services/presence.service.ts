@@ -18,6 +18,11 @@ export class PresenceService {
   constructor(private toastr: ToastrService, private router: Router) {}
 
   createHubConnection(user: User) {
+    if (!user || !user.token) {
+      console.log('No valid user or token');
+      return;
+    }
+
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(this.hubUrl + 'presence', {
         accessTokenFactory: () => user.token,
@@ -25,7 +30,10 @@ export class PresenceService {
       .withAutomaticReconnect()
       .build();
 
-    this.hubConnection.start().catch((error) => console.log(error));
+    this.hubConnection.start().catch((error) => {
+      console.log('SignalR connection error:', error);
+      this.router.navigate(['/']);
+    });
 
     this.hubConnection.on('UserIsOnline', (userName) => {
       console.log('UserIsOnline', userName);
@@ -58,14 +66,15 @@ export class PresenceService {
         );
     });
 
-    this.hubConnection.on('ReceiveLikeNotification', ({ userName, knownAs }) => {
-      this.toastr
-        .info(knownAs + ' liked your profile!')
-        .onTap.pipe(take(1))
-        .subscribe(() =>
-          this.router.navigateByUrl('/members/' + userName)
-        );
-    });
+    this.hubConnection.on(
+      'ReceiveLikeNotification',
+      ({ userName, knownAs }) => {
+        this.toastr
+          .info(knownAs + ' liked your profile!')
+          .onTap.pipe(take(1))
+          .subscribe(() => this.router.navigateByUrl('/members/' + userName));
+      }
+    );
   }
 
   stopHubConnection() {
