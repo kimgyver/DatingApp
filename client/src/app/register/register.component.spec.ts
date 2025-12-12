@@ -1,11 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { AccountService } from '../_services/account.service';
 import { RegisterComponent } from './register.component';
 import { User } from '../_models/user';
 import { of, throwError } from 'rxjs';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 // Mock User data
 const mockUser: User = {
@@ -20,30 +22,34 @@ const mockUser: User = {
 describe('RegisterComponent', () => {
   let component: RegisterComponent;
   let fixture: ComponentFixture<RegisterComponent>;
-  let mockAccountService: jasmine.SpyObj<AccountService>;
-  let mockToastrService: jasmine.SpyObj<ToastrService>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let mockAccountService: jest.Mocked<AccountService>;
+  let mockRouter: jest.Mocked<Router>;
 
   beforeEach(async () => {
-    // Mock services 생성
-    mockAccountService = jasmine.createSpyObj('AccountService', ['register']);
-    mockToastrService = jasmine.createSpyObj('ToastrService', [
-      'success',
-      'error',
-    ]);
-    mockRouter = jasmine.createSpyObj('Router', ['navigateByUrl']);
+    // Mock services
+    mockAccountService = {
+      register: jest.fn(),
+    } as any;
+
+    mockRouter = {
+      navigateByUrl: jest.fn(),
+    } as any;
 
     await TestBed.configureTestingModule({
       declarations: [RegisterComponent],
-      imports: [ReactiveFormsModule],
+      imports: [
+        ReactiveFormsModule,
+        HttpClientTestingModule,
+        ToastrModule.forRoot(),
+      ],
       providers: [
         { provide: AccountService, useValue: mockAccountService },
-        { provide: ToastrService, useValue: mockToastrService },
         { provide: Router, useValue: mockRouter },
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     })
       .overrideComponent(RegisterComponent, {
-        set: { template: '' }, // 템플릿을 비워서 렌더링하지 않음
+        set: { template: '' },
       })
       .compileComponents();
 
@@ -173,7 +179,6 @@ describe('RegisterComponent', () => {
 
   describe('Register Method', () => {
     beforeEach(() => {
-      // Fill form with valid data
       component.registerForm.patchValue({
         gender: 'male',
         userName: 'testuser',
@@ -187,19 +192,19 @@ describe('RegisterComponent', () => {
     });
 
     it('should call accountService.register with correct data on success', (done) => {
-      mockAccountService.register.and.returnValue(of(mockUser));
+      mockAccountService.register.mockReturnValue(of(mockUser));
 
       component.register();
 
       expect(mockAccountService.register).toHaveBeenCalled();
-      const registerData = mockAccountService.register.calls.argsFor(0)[0];
+      const registerData = mockAccountService.register.mock.calls[0][0];
       expect(registerData.userName).toBe('testuser');
       expect(registerData.dateOfBirth).toBe('2000-05-15');
       done();
     });
 
     it('should navigate to /members on successful registration', (done) => {
-      mockAccountService.register.and.returnValue(of(mockUser));
+      mockAccountService.register.mockReturnValue(of(mockUser));
 
       component.register();
 
@@ -211,7 +216,7 @@ describe('RegisterComponent', () => {
 
     it('should handle registration error and set validationErrors', (done) => {
       const errorResponse: any = { error: ['Username already exists'] };
-      mockAccountService.register.and.returnValue(
+      mockAccountService.register.mockReturnValue(
         throwError(() => errorResponse)
       );
 
@@ -224,16 +229,15 @@ describe('RegisterComponent', () => {
     });
 
     it('should format dateOfBirth correctly before sending to server', (done) => {
-      mockAccountService.register.and.returnValue(of(mockUser));
-
-      component.registerForm.patchValue({
-        dateOfBirth: '2000-05-15T12:34:56',
-      });
+      mockAccountService.register.mockReturnValue(of(mockUser));
+      component.registerForm
+        .get('dateOfBirth')
+        ?.setValue('2000-05-15T12:34:56');
 
       component.register();
 
       setTimeout(() => {
-        const registerData = mockAccountService.register.calls.argsFor(0)[0];
+        const registerData = mockAccountService.register.mock.calls[0][0];
         expect(registerData.dateOfBirth).toBe('2000-05-15');
         done();
       }, 0);
@@ -241,13 +245,12 @@ describe('RegisterComponent', () => {
   });
 
   describe('Cancel Method', () => {
-    it('should emit cancelRegister event with false value', (done) => {
-      spyOn(component.cancelRegister, 'emit');
+    it('should emit cancelRegister event with false value', () => {
+      const emitSpy = jest.spyOn(component.cancelRegister, 'emit');
 
       component.cancel();
 
-      expect(component.cancelRegister.emit).toHaveBeenCalledWith(false);
-      done();
+      expect(emitSpy).toHaveBeenCalledWith(false);
     });
   });
 
