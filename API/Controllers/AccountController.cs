@@ -33,7 +33,7 @@ public class AccountController : BaseApiController
         // user.PasswordSalt = hmac.Key;
 
         // _context.Users.Add(user);
-        var result = await _userManager.CreateAsync(user);
+        var result = await _userManager.CreateAsync(user, registerDto.Password);
         if (!result.Succeeded) return BadRequest(result.Errors);
 
         var roleResult = await _userManager.AddToRoleAsync(user, "Member");
