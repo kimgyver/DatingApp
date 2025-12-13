@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -50,6 +51,44 @@ public class AdminController : BaseApiController
         if (!result.Succeeded) return BadRequest("Failed to remove roles");
 
         return Ok(await _userManager.GetRolesAsync(user));
+    }
+
+    [Authorize(Policy = "RequireAdminRole")]
+    [HttpPost("update-user/{currentUserName}")]
+    public async Task<ActionResult> UpdateUser(string currentUserName, [FromBody] UpdateUserDto updateUserDto)
+    {
+        var trimmedCurrentUserName = (currentUserName ?? string.Empty).Trim();
+        var normalizedCurrentUserName = _userManager.NormalizeName(trimmedCurrentUserName);
+
+        var user = await _userManager.Users.SingleOrDefaultAsync(u =>
+            u.NormalizedUserName == normalizedCurrentUserName || u.UserName == trimmedCurrentUserName);
+        if (user == null) return NotFound("User not found");
+
+        // Check if new username already exists
+        var trimmedNewUserName = (updateUserDto.NewUserName ?? string.Empty).Trim();
+        if (!string.IsNullOrEmpty(trimmedNewUserName) && trimmedNewUserName != trimmedCurrentUserName)
+        {
+            var normalizedNewUserName = _userManager.NormalizeName(trimmedNewUserName);
+            var usernameTaken = await _userManager.Users.AnyAsync(u =>
+                (u.NormalizedUserName == normalizedNewUserName || u.UserName == trimmedNewUserName) && u.Id != user.Id);
+            if (usernameTaken) return BadRequest("Username already taken");
+
+            var setUserNameResult = await _userManager.SetUserNameAsync(user, trimmedNewUserName.ToLower());
+            if (!setUserNameResult.Succeeded) return BadRequest(setUserNameResult.Errors);
+        }
+
+        // Change password using ResetPasswordAsync (admin doesn't need current password)
+        if (!string.IsNullOrEmpty(updateUserDto.NewPassword))
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, updateUserDto.NewPassword);
+            if (!result.Succeeded) return BadRequest(result.Errors);
+        }
+
+        var updateResult = await _userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded) return BadRequest(updateResult.Errors);
+
+        return Ok(new { message = "User updated successfully" });
     }
 
     [Authorize(Policy = "ModeratePhotoRole")]

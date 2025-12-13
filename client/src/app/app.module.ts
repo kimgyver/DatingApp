@@ -30,6 +30,7 @@ import { HasRoleDirective } from './_directives/has-role.directive';
 import { UserManagementComponent } from './admin/user-management/user-management.component';
 import { PhotoManagementComponent } from './admin/photo-management/photo-management.component';
 import { RolesModalComponent } from './modals/roles-modal/roles-modal.component';
+import { UserEditModalComponent } from './modals/user-edit-modal/user-edit-modal.component';
 import { ProfileCardModule } from './profile-card/profile-card.module';
 
 @NgModule({
@@ -54,6 +55,7 @@ import { ProfileCardModule } from './profile-card/profile-card.module';
     UserManagementComponent,
     PhotoManagementComponent,
     RolesModalComponent,
+    UserEditModalComponent,
   ],
   imports: [
     BrowserModule,

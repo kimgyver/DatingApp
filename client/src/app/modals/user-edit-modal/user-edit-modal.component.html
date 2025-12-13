@@ -1,0 +1,117 @@
+<div class="modal-header">
+  <h4 class="modal-title">Edit User</h4>
+  <button
+    type="button"
+    class="btn-close"
+    aria-label="Close"
+    (click)="cancel()"
+  ></button>
+</div>
+
+<div class="modal-body">
+  <form [formGroup]="editForm" (ngSubmit)="submit()">
+    <div class="mb-3">
+      <label class="form-label"
+        >Current Username: <strong>{{ userName }}</strong></label
+      >
+    </div>
+
+    <!-- New Username Input -->
+    <div class="mb-3">
+      <label for="newUserName" class="form-label"
+        >New Username (Optional)</label
+      >
+      <input
+        type="text"
+        class="form-control"
+        id="newUserName"
+        formControlName="newUserName"
+        placeholder="Leave blank to keep current username"
+      />
+    </div>
+
+    <!-- New Password Input -->
+    <div class="mb-3">
+      <label for="newPassword" class="form-label"
+        >New Password (Optional)</label
+      >
+      <input
+        type="password"
+        class="form-control"
+        id="newPassword"
+        formControlName="newPassword"
+        placeholder="Leave blank to keep current password"
+        (blur)="editForm.get('newPassword')?.markAsTouched()"
+      />
+
+      <!-- Password Requirements Checklist -->
+      <div
+        *ngIf="isPasswordProvided() && editForm.get('newPassword')?.touched"
+        class="small mt-2"
+      >
+        <div class="text-muted mb-2">Password must contain:</div>
+        <div
+          [class.text-success]="hasMinLength()"
+          [class.text-danger]="!hasMinLength()"
+        >
+          <span *ngIf="hasMinLength()">✓</span>
+          <span *ngIf="!hasMinLength()">✗</span>
+          At least 6 characters
+        </div>
+        <div
+          [class.text-success]="hasDigit()"
+          [class.text-danger]="!hasDigit()"
+        >
+          <span *ngIf="hasDigit()">✓</span>
+          <span *ngIf="!hasDigit()">✗</span>
+          At least one digit (0-9)
+        </div>
+        <div
+          [class.text-success]="hasLowerCase()"
+          [class.text-danger]="!hasLowerCase()"
+        >
+          <span *ngIf="hasLowerCase()">✓</span>
+          <span *ngIf="!hasLowerCase()">✗</span>
+          At least one lowercase letter
+        </div>
+        <div
+          [class.text-success]="hasUpperCase()"
+          [class.text-danger]="!hasUpperCase()"
+        >
+          <span *ngIf="hasUpperCase()">✓</span>
+          <span *ngIf="!hasUpperCase()">✗</span>
+          At least one uppercase letter
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Password Input (only shown if password is provided) -->
+    <div class="mb-3" *ngIf="isPasswordProvided()">
+      <label for="confirmPassword" class="form-label">Confirm Password *</label>
+      <input
+        type="password"
+        class="form-control"
+        id="confirmPassword"
+        formControlName="confirmPassword"
+        placeholder="Confirm new password"
+      />
+      <div
+        *ngIf="
+          editForm.get('confirmPassword')?.value !==
+            editForm.get('newPassword')?.value &&
+          editForm.get('confirmPassword')?.value !== ''
+        "
+        class="text-danger small mt-1"
+      >
+        Passwords do not match
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="cancel()">
+    Cancel
+  </button>
+  <button type="submit" class="btn btn-primary">Save Changes</button>
+</div>

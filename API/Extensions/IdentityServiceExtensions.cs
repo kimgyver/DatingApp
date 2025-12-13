@@ -17,7 +17,8 @@ public static class IdentityServiceExtensions
         })
             .AddRoles<AppRole>()
             .AddRoleManager<RoleManager<AppRole>>()
-            .AddEntityFrameworkStores<DataContext>();
+            .AddEntityFrameworkStores<DataContext>()
+            .AddDefaultTokenProviders();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

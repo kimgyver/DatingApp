@@ -3,6 +3,7 @@ import { AdminService } from '../../_services/admin.service';
 import { User } from '../../_models/user';
 import { BsModalRef, BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
 import { RolesModalComponent } from '../../modals/roles-modal/roles-modal.component';
+import { UserEditModalComponent } from '../../modals/user-edit-modal/user-edit-modal.component';
 
 @Component({
   selector: 'app-user-management',
@@ -11,8 +12,8 @@ import { RolesModalComponent } from '../../modals/roles-modal/roles-modal.compon
 })
 export class UserManagementComponent implements OnInit {
   users: User[] = [];
-  bsModalRef: BsModalRef<RolesModalComponent> =
-    new BsModalRef<RolesModalComponent>();
+  bsModalRef: BsModalRef<RolesModalComponent | UserEditModalComponent> =
+    new BsModalRef<RolesModalComponent | UserEditModalComponent>();
   availableRoles = ['Admin', 'Moderator', 'Member'];
 
   constructor(
@@ -46,8 +47,8 @@ export class UserManagementComponent implements OnInit {
     this.bsModalRef = this.modalService.show(RolesModalComponent, config);
     this.bsModalRef.onHide?.subscribe({
       next: () => {
-        console.log(1);
-        const selectedRoles = this.bsModalRef.content?.selectedRoles;
+        const modalContent = this.bsModalRef.content as RolesModalComponent;
+        const selectedRoles = modalContent?.selectedRoles;
         if (!this.arrayEqual(selectedRoles!, user.roles)) {
           this.adminService
             .updateUsersRoles(user.userName, selectedRoles!)
@@ -61,5 +62,21 @@ export class UserManagementComponent implements OnInit {
 
   private arrayEqual(arr1: any[], arr2: any[]) {
     return JSON.stringify(arr1.sort()) === JSON.stringify(arr2.sort());
+  }
+
+  openEditUserModal(user: User) {
+    const config = {
+      class: 'modal-dialog-centered',
+      initialState: {
+        userName: user.userName,
+      },
+    };
+
+    this.bsModalRef = this.modalService.show(UserEditModalComponent, config);
+    this.bsModalRef.onHide?.subscribe({
+      next: () => {
+        this.getUsersWithRoles();
+      },
+    });
   }
 }

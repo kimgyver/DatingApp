@@ -26,4 +26,15 @@ export class AdminService {
       {}
     );
   }
+
+  updateUserNameAndPassword(
+    currentUserName: string,
+    newUserName: string,
+    newPassword: string
+  ) {
+    return this.http.post(
+      this.baseUrl + 'admin/update-user/' + currentUserName,
+      { newUserName, newPassword }
+    );
+  }
 }
