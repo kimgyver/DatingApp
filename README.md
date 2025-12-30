@@ -6,7 +6,8 @@ DatingApp은 Angular(프론트엔드)와 ASP.NET Core(백엔드)로 구성된 �
 
 ## 폴더 구조
 
-````
+```
+
 DatingApp/
 │
 ├── API/                # ASP.NET Core 백엔드 루트
@@ -36,15 +37,16 @@ DatingApp/
 ├── DatingApp.sln       # [솔루션 파일] 전체 프로젝트/의존성 관리
 └── README.md           # (이 문서)
 
+```
 
 ## 실전 구조 활용 예시 & 온보딩 Q&A
 
 ### 폴더/레이어별 실전 시나리오
 
-
 ### 대표 코드/흐름 예시
 
 **회원 정보 수정(프론트→백엔드 전체 흐름):**
+
 1. `member-edit.component.ts`에서 폼 입력 후 저장 클릭
 2. `members.service.ts`의 `updateMember()` 호출 → API PUT 요청
 3. 백엔드 `UsersController.UpdateUser()`에서 DTO로 데이터 수신, 검증, 저장
@@ -57,7 +59,7 @@ updateMember() {
 		// 성공 시 알림/상태 갱신
 	});
 }
-````
+```
 
 ```csharp
 // API/Controllers/UsersController.cs
