@@ -1,34 +1,35 @@
-## 목차
+# React ↔ Angular ↔ Blazor 주요 개념/코드 1:1 매핑
 
-- [기본 개념](#기본-개념)
-- [고급/최적화/특수-패턴-비교](#고급최적화특수-패턴-비교)
-- [Fragment/Template/비동기](#fragmenttemplate비동기)
-- [실전 팁/전환 주의점](#실전-팁전환-주의점)
+---
 
-## 고급/최적화/특수 패턴 비교
+## Fragment/Template/비동기 & 고급/최적화/특수 패턴 비교
 
-### (1) 기본/상태/라이프사이클
+### (1) Fragment/Template/비동기
 
-| **실행/렌더링 모델** | CSR, SSR(Next.js), Hydrate | CSR, SSR(Universal), Hydrate | SSR, Server, WebAssembly, Hybrid, MAUI(Desktop/Mobile) |
-| **테스트/테스팅** | Jest, React Testing Library, Cypress | Jasmine, Karma, Protractor, Jest | xUnit, bUnit, Playwright, e2e |
-
-## Fragment/Template/비동기
-
-### (1) Fragment/Template
-
-| 개념/패턴             | React 예시                                         | Angular 예시                                           | Blazor 예시                                                                                                                                                                              |
-| --------------------- | -------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Fragment/Template** | `<></>` (Fragment, no extra DOM) <br/>`<Fragment>` | `<ng-container>`, `<ng-template>` (구조적, DOM 미추가) | `@key`, `@attributes`, `RenderFragment` (구조적/동적 렌더링)<br/>`<ChildContent>@context.Name</ChildContent>`<br/>`Parent.razor: <ChildComponent ChildContent="@(() => <h1>Hi</h1>)" />` |
-
-### (2) 비동기/데이터 흐름
-
-| 개념/패턴              | React 예시                                        | Angular 예시                                                | Blazor 예시                                                                  |
-| ---------------------- | ------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| **비동기/데이터 흐름** | Promise → `.then()`, `await`, Suspense(비동기 UI) | Observable → `subscribe()`, async pipe, Signal → `effect()` | `Task`, `async/await`, `EventCallback`, `StateHasChanged()`, `await foreach` |
+| 개념/패턴              | React 예시                                         | Angular 예시                                                | Blazor 예시                                                                                                                                                                              |
+| ---------------------- | -------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Fragment/Template**  | `<></>` (Fragment, no extra DOM) <br/>`<Fragment>` | `<ng-container>`, `<ng-template>` (구조적, DOM 미추가)      | `@key`, `@attributes`, `RenderFragment` (구조적/동적 렌더링)<br/>`<ChildContent>@context.Name</ChildContent>`<br/>`Parent.razor: <ChildComponent ChildContent="@(() => <h1>Hi</h1>)" />` |
+| **비동기/데이터 흐름** | Promise → `.then()`, `await`, Suspense(비동기 UI)  | Observable → `subscribe()`, async pipe, Signal → `effect()` | `Task`, `async/await`, `EventCallback`, `StateHasChanged()`, `await foreach`                                                                                                             |
 
 > **비동기 UI 처리 요약**: React는 Suspense/Promise, Angular는 async pipe/Observable, Blazor는 await/Task/EventCallback 등으로 비동기 데이터와 UI를 연결합니다.
 
-## 실전 팁/전환 주의점
+### (2) 고급/최적화/특수 패턴 비교
+
+| 개념/패턴               | React 예시                                                       | Angular 예시                                              | Blazor 예시                                    |
+| ----------------------- | ---------------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------- |
+| **상태/불변성**         | useState, map/filter/spread, 직접 변경 금지                      | 서비스+RxJS, (상대적으로 자유)                            | StateContainer, (상대적으로 자유)              |
+| **전역 상태관리**       | Redux, Context API, prop drilling→Context                        | NgRx, 서비스+RxJS, DI                                     | Fluxor, 서비스, CascadingParameter             |
+| **라이프사이클/훅**     | useEffect, useMemo, useCallback, useRef, useContext, Custom Hook | ngOnInit, ngOnDestroy, ngAfterViewInit 등                 | OnInitialized, OnParametersSetAsync, Dispose   |
+| **커스텀 훅/파이프**    | Custom Hook (재사용 로직, DOM 제어는 제한적)                     | Pipe (`@Pipe`)                                            | ValueConverter, Custom Method                  |
+| **폼/입력/유효성검사**  | Controlled/Uncontrolled, Formik, Yup, useForm                    | ngModel, Reactive Forms, Validators                       | bind-Value, EditForm, DataAnnotationsValidator |
+| **DOM 참조/Ref**        | useRef, ref                                                      | @ViewChild, ElementRef                                    | @ref, ElementReference                         |
+| **조건/반복/렌더링**    | {cond && <div/>}, arr.map(), Fragment, Virtual DOM               | *ngIf, *ngFor, <ng-container>, ChangeDetection            | @if, @foreach, @key, Virtualize                |
+| **라이프사이클/최적화** | React.memo, useMemo, useCallback (실제 병목일 때만), StrictMode  | OnPush, trackBy, Virtual Scroll, Pure Pipe, Strict DI/AOT | ShouldRender, Virtualize, Hot Reload           |
+| **테스트/테스팅**       | Jest, React Testing Library, Cypress                             | Jasmine, Karma, Protractor                                | xUnit, bUnit, Playwright                       |
+
+---
+
+## 실전 팁/전환 주의점 (통합)
 
 - **테스트/테스팅**: React(Jest, React Testing Library, Cypress), Angular(Jasmine, Karma, Protractor, Jest), Blazor(xUnit, bUnit, Playwright, e2e) 등 각 프레임워크별 테스트 도구/전략을 숙지하세요.
 - **StrictMode/개발 도구**: React(StrictMode), Angular(Strict DI/AOT), Blazor(Hot Reload 등)로 개발 생산성과 안정성을 높일 수 있습니다.
@@ -68,8 +69,6 @@ this.http.get<User[]>('/api/users').subscribe(users => ...);
 @inject HttpClient Http
 var users = await Http.GetFromJsonAsync<List<User>>("/api/users");
 ```
-
-# React ↔ Angular ↔ Blazor 주요 개념/코드 1:1 매핑
 
 \*\*\* End Patch
 
