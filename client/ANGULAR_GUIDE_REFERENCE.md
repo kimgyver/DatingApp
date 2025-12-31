@@ -1,3 +1,5 @@
+# 목차 (Table of Contents)
+
 - [폴더 구조](#폴더-구조-clientsrcapp)
 - [Angular 핵심 개념](#angular-핵심-개념)
 - [실전 팁](#실전-팁)
@@ -1288,27 +1290,26 @@ constructor(private accountService: AccountService) {}
   - 대규모/복잡한 앱, 협업, 상태 추적/디버깅/Undo/Redo/DevTools가 중요한 경우
   - 상태가 여러 도메인/기능에 걸쳐 공유·변경되고, 예측 가능성이 중요한 경우
 
-#### 4. 참고 자료
--
----
-#### NgRx / NGXS / Akita 간단 비교 및 실무 팁 (Angular 관점)
+#### 4. NgRx / NGXS / Akita 간단 비교 및 실무 팁 (Angular 관점)
 
 - **NgRx**: Redux 패턴을 Angular에 맞게 확장. 액션, 리듀서, 이펙트, 셀렉터 등 구조가 명확. DevTools, 미들웨어, Time Travel 지원. 난이도는 Redux와 비슷하거나 약간 더 높음(타입, 이펙트, 보일러플레이트 등).
 - **NGXS**: NgRx보다 문법이 간결하고, 러닝커브가 낮음. 데코레이터 기반, 코드량 적음.
 - **Akita**: 실용적이고 유연한 상태 관리. 러닝커브는 NgRx < Akita < NGXS 순.
 
 **정리**
+
 - 서비스+RxJS: 간단/중소규모에 적합
 - NgRx/NGXS/Akita: 대규모/복잡/협업, 예측 가능성, DevTools 필요 시 적합
 - 난이도: 서비스+RxJS < NGXS/Akita < NgRx
 
 **실무 팁**
+
 - 작은 앱/단순 상태: 서비스+RxJS, NGXS, Akita
 - 대규모/복잡/협업: NgRx (구조화, 예측 가능성, DevTools)
+
+#### 5. 참고 자료
 
 - [Angular 공식 상태 관리 가이드](https://angular.kr/guide/state-management)
 - [NgRx 공식 문서](https://ngrx.io/)
 - [NGXS 공식 문서](https://www.ngxs.io/)
 - [Akita 공식 문서](https://datorama.github.io/akita/)
-
-# 목차 (Table of Contents)
