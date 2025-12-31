@@ -183,6 +183,18 @@ export class HelloComponent {}
   - `declarations`: 이 모듈에서 선언(등록)하는 컴포넌트, 디렉티브, 파이프 목록입니다. (이 모듈에서만 사용 가능)
   - `imports`: 이 모듈에서 사용할 외부 모듈(공통 모듈, 라우팅 모듈 등) 목록입니다.
   - `providers`: 이 모듈에서 사용할 서비스(의존성 주입) 목록입니다. (여기에 등록하면 이 모듈 범위에서 싱글턴)
+    - 일반 서비스는 대부분 `@Injectable({ providedIn: 'root' })`로 자동 등록되지만,
+    - **특별한 DI 토큰(예: HTTP_INTERCEPTORS)이나 여러 구현체를 등록할 때는 providers에 직접 추가해야 합니다.**
+    - 예시: HTTP 요청/응답을 가로채는 인터셉터 등록
+      ```typescript
+      providers: [
+        { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+        { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+        { provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true },
+      ];
+      ```
+    - 여기서 `multi: true`는 여러 인터셉터를 배열로 등록할 수 있게 해줍니다(순서대로 실행).
+    - 인터셉터는 Angular가 HTTP 요청/응답을 가로채서 공통 로직(에러 처리, 토큰 추가, 로딩 표시 등)을 실행할 수 있게 해줍니다.
   - `bootstrap`: 앱 시작 시 부트스트랩(최상위)할 컴포넌트(일반적으로 AppComponent)
 
 - **실제 코드**:  
@@ -192,9 +204,10 @@ export class HelloComponent {}
   import { BrowserModule } from "@angular/platform-browser";
   import { AppComponent } from "./app.component";
   import { MemberListComponent } from "./members/member-list/member-list.component";
+  import { SharedModule } from "./_modules/shared.module";
   @NgModule({
-    declarations: [AppComponent, MemberListComponent], // 이 모듈에서 사용하는 컴포넌트/디렉티브/파이프 등록
-    imports: [BrowserModule], // 외부 모듈(공통, 라우팅 등) 등록
+    declarations: [AppComponent, MemberListComponent], // 이 모듈에서 사용하는 직접 만든(혹은 선언한) 모든 컴포넌트/디렉티브/파이프 등록
+    imports: [BrowserModule, SharedModule], // 외부 모듈(공통, 라우팅 등) 등록
     providers: [], // 서비스(의존성 주입) 등록
     bootstrap: [AppComponent], // 앱 시작 시 부트스트랩할 컴포넌트
   })
@@ -210,16 +223,19 @@ export class HelloComponent {}
 
   - **시나리오**: 로그인/로그아웃, 회원가입 등 인증 상태를 전역에서 관리할 때 AccountService를 DI로 주입해 사용합니다.
 
-  ```typescript
-  import { Injectable } from "@angular/core";
-  import { BehaviorSubject } from "rxjs";
-  @Injectable({ providedIn: "root" })
-  export class AccountService {
-    private currentUserSource = new BehaviorSubject<User | null>(null);
-    currentUser$ = this.currentUserSource.asObservable();
-    // ...
-  }
-  ```
+> **참고:**
+> 서비스 클래스에 `@Injectable({ providedIn: 'root' })`를 붙이면, 별도 providers 등록 없이 앱 전체에서 자동으로 싱글턴으로 관리됩니다. 대부분의 서비스는 이 방식으로 등록하며, 특별한 경우에만 providers에 직접 명시합니다.
+
+```typescript
+import { Injectable } from "@angular/core";
+import { BehaviorSubject } from "rxjs";
+@Injectable({ providedIn: "root" })
+export class AccountService {
+  private currentUserSource = new BehaviorSubject<User | null>(null);
+  currentUser$ = this.currentUserSource.asObservable();
+  // ...
+}
+```
 
 ```typescript
 import { AccountService } from './_services/account.service';
@@ -297,10 +313,84 @@ constructor(private accountService: AccountService) {}
     ```
 
 - **팁**:
+
   - BehaviorSubject는 항상 최신값을 보장하므로, 로그인/로그아웃, 테마, 알림 등 전역 상태 관리에 적합합니다.
   - 메모리 누수 방지를 위해 컴포넌트에서 구독 시 take(1), takeUntil, async 파이프 등을 활용하세요.
 
+  - **참고:**
+
+    - 로그인 상태 등 여러 번 값이 바뀌는 상태 스트림(BehaviorSubject, Subject 등)은 템플릿에서 `| async` 파이프를 꼭 사용해야 UI가 항상 최신 상태로 자동 반영됩니다.
+    - 단순 HTTP 요청처럼 한 번만 응답이 오는 경우에는 한 번만 값을 받아도 되지만,
+    - 로그인/로그아웃 등 상태가 바뀔 때마다 값이 여러 번 emit되는 경우에는 `| async`가 없으면 UI가 자동으로 갱신되지 않습니다.
+    - 즉, "상태 스트림은 항상 | async 파이프와 함께!"라고 기억하면 좋습니다.
+
+  - **실전 메모리 누수 주의:**
+    - HTTP 요청(예: this.http.get<...>())처럼 "한 번만 응답이 오는 Observable"은 subscribe() 후 자동으로 complete(종료)되어 메모리 누수 걱정이 거의 없습니다.
+    - 하지만 interval, timer, WebSocket, Subject 등 "계속 값이 나오는(무한 스트림) Observable"을 subscribe()로 구독할 때는 반드시 ngOnDestroy에서 unsubscribe()를 해줘야 메모리 누수를 막을 수 있습니다.
+    - 템플릿에서 `| async` 파이프를 사용하면 Angular가 자동으로 구독/해제를 관리해주므로, 메모리 누수 걱정 없이 안전하게 사용할 수 있습니다.
+    - 정리: "한 번만 응답이 오는 HTTP 요청"은 unsubscribe() 생략 가능, "계속 살아있는 스트림"은 반드시 직접 해제!
+
+**실전 pipe/map vs subscribe(next) 패턴**
+
+- 복잡한 데이터 가공/변환은 pipe(map(...)) 등 연산자에서 처리하고,
+- subscribe의 next에서는 "최종 소비(상태 저장, UI 반영 등)"만 담당하는 것이 가장 깔끔한 패턴입니다.
+- 이렇게 하면 데이터 흐름이 명확해지고, 코드 유지보수성이 높아집니다.
+
+> 예시:
+>
+> ```typescript
+> observable
+>   .pipe(
+>     map((value) => value * 2), // 여기서 변환
+>     filter((value) => value > 10)
+>   )
+>   .subscribe({
+>     next: (result) => {
+>       // 여기서는 이미 가공된 값만 받아서 사용
+>       this.value = result;
+>     },
+>   });
+> ```
+
+**실전 subscribe() 위치/책임 패턴**
+
+- 서비스 내부에서 subscribe()는 "내부 상태를 즉시 초기화해야 할 때"만 사용합니다. (예: 생성자에서 현재 사용자 정보 등)
+- 대부분의 경우 서비스 메서드는 Observable만 반환하고, 실제 subscribe()는 컴포넌트 등 "호출하는 쪽"에서 트리거합니다.
+- 이렇게 하면 구독/해제, 에러 처리, UI 상태 관리 등을 컴포넌트에서 명확히 제어할 수 있습니다.
+- 서비스(service)에서는 Observable만 반환(return)하고, 실제 subscribe()는 컴포넌트(component)에서 호출하는 것이 Angular/RxJS의 대표적인 패턴입니다.
+
+> 예시: MembersService 생성자에서는 user 상태 초기화를 위해 subscribe()를 직접 사용하지만,
+> getMembers 등 데이터 제공 메서드는 Observable만 반환하고 subscribe()는 컴포넌트에서 수행합니다.
+
 ### 4. Data Binding (데이터 바인딩)
+
+### ng-container (구조적 템플릿 컨테이너)
+
+- **개념**: `ng-container`는 실제 DOM 요소를 생성하지 않고, Angular의 구조적 지시자(`*ngIf`, `*ngFor` 등)나 여러 조건/반복을 그룹화할 때 사용하는 가상 컨테이너입니다. 렌더링 결과에 불필요한 div/span 등 추가 DOM이 생기지 않아, 레이아웃에 영향을 주지 않고 템플릿 논리를 깔끔하게 구성할 수 있습니다.
+
+- **주요 용도**:
+  - 여러 구조적 지시자를 한 곳에 적용해야 할 때
+  - 조건부 렌더링, 반복, 템플릿 분기 등에서 불필요한 DOM 트리 생성을 방지할 때
+
+- **실전 예시**:
+  ```html
+  <ng-container *ngIf="isLoggedIn; else guestBlock">
+    <span>환영합니다, {{ userName }}님!</span>
+  </ng-container>
+  <ng-template #guestBlock>
+    <span>로그인 해주세요.</span>
+  </ng-template>
+
+  <!-- 여러 조건/반복을 그룹화할 때 -->
+  <ng-container *ngFor="let item of items">
+    <div>{{ item.name }}</div>
+    <div *ngIf="item.isNew">NEW!</div>
+  </ng-container>
+  ```
+
+- **팁**:
+  - `ng-container`는 렌더링 결과에 아무런 DOM 요소도 남기지 않습니다(개발자 도구에서 확인 가능).
+  - 구조적 지시자(`*ngIf`, `*ngFor` 등)와 함께 템플릿 논리를 깔끔하게 분리할 때 적극 활용하세요.
 
 > **최신 Angular에서는 Standalone Component, Signal 기반 바인딩 등도 지원합니다.**
 
@@ -319,11 +409,21 @@ constructor(private accountService: AccountService) {}
     ```html
     <!-- 시나리오: 프로필 사진, 버튼 활성화 등 UI 요소를 동적으로 제어할 때 사용 -->
     <img [src]="member.photoUrl" alt="프로필" /> <button [disabled]="!editForm?.dirty">저장</button>
+    <!--
+      [속성명]에는 HTML 표준 속성(src, disabled, value 등)만 사용할 수 있습니다.
+      (커스텀 컴포넌트의 @Input()도 가능)
+    -->
     ```
   - **Event Binding**
     ```html
     <!-- 시나리오: 버튼 클릭, 입력값 변경 등 사용자 이벤트를 처리할 때 사용 -->
     <button (click)="updateMember()">Save</button> <input (input)="onInputChange($event)" />
+    <!--
+      (이벤트명)에는 HTML 표준 DOM 이벤트(click, input, submit 등)만 사용할 수 있습니다.
+      (커스텀 컴포넌트의 @Output()으로 정의한 이벤트명도 사용 가능)
+      즉, 표준 DOM 이벤트는 미리 정해진 이름만 사용 가능하고,
+      커스텀 이벤트는 컴포넌트에서 @Output()으로 직접 이름을 지정할 수 있습니다.
+    -->
     ```
   - **양방향 바인딩 (ngModel)**
     ```html
@@ -478,6 +578,41 @@ constructor(private accountService: AccountService) {}
 
 - **개념**: 라우팅, canActivate 등
 - **실전 팁**: 라우트 가드는 인증/권한 체크, 데이터 프리패치 등에 활용합니다. 라우트 순서와 와일드카드 경로(\*\*) 위치에 주의하세요.
+
+#### <router-outlet>란?
+
+- **개념**: `<router-outlet>`은 Angular 라우팅 시스템의 핵심 지시자(Directive)로, 현재 URL에 따라 해당하는 컴포넌트의 뷰가 동적으로 삽입되는 "자리 표시자(placeholder)" 역할을 합니다.
+- **실전 팁**:
+
+  - 앱의 메인 레이아웃(예: `app.component.html`)에 `<router-outlet>`을 1회 이상 배치하면, 라우터가 URL에 따라 해당 컴포넌트를 동적으로 렌더링합니다.
+  - 중첩 라우팅(자식 라우트)에서는 부모 컴포넌트 템플릿에도 `<router-outlet>`을 추가해 자식 컴포넌트가 그 위치에 렌더링되도록 할 수 있습니다.
+  - `<router-outlet>`이 없는 곳에는 라우트 컴포넌트가 표시되지 않습니다.
+
+- **실제 코드 예시**:
+
+  - `src/app/app.component.html`
+    ```html
+    <nav>...네비게이션...</nav>
+    <router-outlet></router-outlet>
+    <footer>...푸터...</footer>
+    ```
+  - 중첩 라우팅 예시:
+    ```html
+    <!-- 부모 컴포넌트 템플릿 -->
+    <h2>회원 관리</h2>
+    <router-outlet></router-outlet>
+    <!-- 자식 라우트가 이 위치에 렌더링됨 -->
+    ```
+
+- **팁**:
+  - `<router-outlet>`은 여러 번(중첩) 사용할 수 있습니다. 각 라우트의 children 배열에 자식 라우트를 정의하면, 부모 컴포넌트의 `<router-outlet>` 위치에 자식 컴포넌트가 동적으로 삽입됩니다.
+  - 라우팅이 정상 동작하지 않거나 화면이 비어 있다면, `<router-outlet>`이 올바른 위치에 있는지 확인하세요.
+
+> **정리:**
+>
+> - `<router-outlet>`은 "라우트에 따라 컴포넌트를 동적으로 표시하는 자리 표시자"입니다.
+> - 앱의 메인 템플릿과 중첩 라우트가 필요한 부모 컴포넌트에 반드시 포함되어야 합니다.
+> - 라우팅 구조를 설계할 때, 각 레벨별로 `<router-outlet>`의 위치와 역할을 명확히 이해하면 복잡한 화면도 쉽게 구현할 수 있습니다.
 
 #### Route Configuration
 
@@ -889,16 +1024,28 @@ constructor(private accountService: AccountService) {}
 #### @HostBinding, @HostListener
 
 - `@HostBinding`: 호스트 요소의 속성/클래스/스타일을 바인딩
+
   ```typescript
   @HostBinding('class.active') isActive = true;
   @HostBinding('style.color') color = 'red';
   ```
-- `@HostListener`: 호스트 요소의 이벤트를 리스닝
+
+- `@HostListener`: 호스트 요소(또는 window/document 등)의 이벤트를 리스닝합니다. 일반적인 버튼 클릭, 입력 등은 템플릿에서 `(click)`, `(input)` 등으로 직접 바인딩하는 것이 표준입니다. 하지만 컴포넌트 외부(예: window:beforeunload, window:resize, host element 등) 이벤트를 감지해야 할 때, 또는 커스텀 디렉티브에서 호스트 DOM 이벤트를 다룰 때 `@HostListener`를 사용합니다.
   ```typescript
+  // 1. 호스트 요소(디렉티브/컴포넌트)의 이벤트
   @HostListener('click') onClick() {
     // 클릭 시 동작
   }
+  // 2. window/document 등 글로벌 이벤트
+  @HostListener('window:beforeunload', ['$event']) unloadHandler($event: any) {
+    // 창 닫힘/새로고침 시 동작
+  }
   ```
+
+> **정리:**
+>
+> - 템플릿에서 발생하는 이벤트(버튼 클릭, 입력 등)는 `(click)`, `(input)` 등 템플릿 바인딩을 사용하세요.
+> - `@HostListener`는 컴포넌트 외부(윈도우, 호스트 등) 이벤트나 커스텀 디렉티브에서 특별한 경우에만 사용합니다.
 
 #### ng-content (Content Projection)
 
@@ -942,47 +1089,97 @@ constructor(private accountService: AccountService) {}
 
 - **개념**: Angular 앱의 렌더링, 데이터 처리, 네트워크 등 전반적인 성능을 높이기 위한 다양한 전략입니다.
 - **실전 팁**: ChangeDetectionStrategy.OnPush, trackBy, Lazy Loading, Virtual Scrolling, Pure Pipe, Memoization, Web Worker, Preloading 등 다양한 기법을 상황에 맞게 조합하세요.
-- **실제 코드**:
 
-  - **ChangeDetectionStrategy.OnPush**
-    ```typescript
-    import { ChangeDetectionStrategy, Component } from '@angular/core';
-    @Component({
-      ...,
-      changeDetection: ChangeDetectionStrategy.OnPush
-    })
-    export class FastComponent {}
-    ```
-  - **trackBy**
-    ```html
-    <li *ngFor="let item of items; trackBy: trackById">...</li>
-    ```
-    ```typescript
-    trackById(index: number, item: Item) { return item.id; }
-    ```
-  - **Lazy Loading**
-    ```typescript
-    const routes: Routes = [{ path: "admin", loadChildren: () => import("./admin/admin.module").then((m) => m.AdminModule) }];
-    ```
-  - **Pure Pipe**
-    ```typescript
-    @Pipe({ name: 'myPipe', pure: true })
-    export class MyPipe implements PipeTransform { ... }
-    ```
-  - **Virtual Scrolling** (cdk-virtual-scroll-viewport)
-    ```html
-    <cdk-virtual-scroll-viewport itemSize="50" style="height: 400px">
-      <div *cdkVirtualFor="let item of items">{{ item }}</div>
-    </cdk-virtual-scroll-viewport>
-    ```
-  - **Web Worker**
-    ```typescript
-    // main.ts
-    if (window.Worker) {
-      const myWorker = new Worker("./app.worker", { type: "module" });
-      myWorker.postMessage("start");
-    }
-    ```
+#### 주요 성능 최적화 기법과 설명
+
+- **Enable Production Mode**:
+
+  - 프로덕션 빌드(`ng build --configuration production`) 시 Angular의 개발자용 검사/오류 메시지를 비활성화하고, 번들 크기를 최소화합니다. 실제 서비스 배포 시 필수로 적용해야 하며, 트리 쉐이킹·최적화·압축 등으로 JS 번들 사이즈가 크게 줄어듭니다.
+
+  ```bash
+  ng build --configuration production
+  ```
+
+  - Angular 17+는 기본적으로 프로덕션 빌드 시 자동으로 production mode가 활성화됩니다.
+
+- **ChangeDetectionStrategy.OnPush**:
+
+  - 컴포넌트의 변경 감지 범위를 "입력(Input) 변경 또는 Observable emit 시"로 한정해 불필요한 렌더링을 줄입니다. 데이터가 자주 바뀌지 않는 UI, 대량 리스트, 성능이 중요한 화면에 필수.
+
+  ```typescript
+  import { ChangeDetectionStrategy, Component } from '@angular/core';
+  @Component({
+    ...,
+    changeDetection: ChangeDetectionStrategy.OnPush
+  })
+  export class FastComponent {}
+  ```
+
+- **trackBy**:
+
+  - \*ngFor 반복 시, 각 아이템의 고유 식별자를 지정해 Angular가 DOM을 효율적으로 재사용하도록 합니다. 대량 리스트에서 렌더링 성능이 크게 향상됩니다.
+
+  ```html
+  <li *ngFor="let item of items; trackBy: trackById">...</li>
+  ```
+
+  ```typescript
+  trackById(index: number, item: Item) { return item.id; }
+  ```
+
+- **Lazy Loading**:
+
+  - 라우트별로 코드를 분할해(코드 스플리팅) 실제로 필요한 시점(=해당 라우트로 이동할 때)에만 모듈을 로드합니다. 즉, 사용자가 특정 경로로 처음 진입할 때 그때서야 관련 코드가 네트워크로 로드됩니다. 초기 로딩 속도 개선, 대규모 앱에서 필수.
+
+- **Preloading**:
+
+  - Lazy Loading의 단점(처음 진입 시 약간의 지연)을 보완하기 위해, 앱 초기 로딩 후 백그라운드에서 미리 라우트 모듈을 로드하는 전략입니다. 자주 방문하는 페이지, 모바일 환경 등에서 UX를 개선할 수 있습니다.
+  - Angular의 `PreloadAllModules` 전략 예시:
+
+  ```typescript
+  import { PreloadAllModules, RouterModule } from "@angular/router";
+  @NgModule({
+    imports: [RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })],
+  })
+  export class AppRoutingModule {}
+  ```
+
+  - 필요에 따라 커스텀 preloading 전략도 구현할 수 있습니다.
+
+  ```typescript
+  const routes: Routes = [{ path: "admin", loadChildren: () => import("./admin/admin.module").then((m) => m.AdminModule) }];
+  ```
+
+- **Pure Pipe**:
+
+  - 입력값이 바뀔 때만 파이프가 재실행되어, 불필요한 연산을 방지합니다. 계산량이 많은 변환 로직에 효과적.
+
+  ```typescript
+  @Pipe({ name: 'myPipe', pure: true })
+  export class MyPipe implements PipeTransform { ... }
+  ```
+
+- **Virtual Scrolling** (cdk-virtual-scroll-viewport):
+
+  - 화면에 보이는 데이터만 DOM에 렌더링해, 수천~수만 개의 리스트도 부드럽게 처리합니다. Angular CDK의 Virtual Scrolling 모듈 활용.
+
+  ```html
+  <cdk-virtual-scroll-viewport itemSize="50" style="height: 400px">
+    <div *cdkVirtualFor="let item of items">{{ item }}</div>
+  </cdk-virtual-scroll-viewport>
+  ```
+
+- **Web Worker**:
+
+  - 무거운 연산(예: 이미지 처리, 대량 데이터 파싱 등)을 메인 스레드와 분리해 UI가 멈추지 않게 합니다. Angular CLI로 worker 생성 가능.
+
+  ```typescript
+  // main.ts
+  if (window.Worker) {
+    const myWorker = new Worker("./app.worker", { type: "module" });
+    myWorker.postMessage("start");
+  }
+  ```
 
 - **참고**:
   - 공식 문서: [ViewChild](https://angular.kr/api/core/ViewChild), [HostBinding/HostListener](https://angular.kr/api/core/HostBinding), [Signal](https://angular.dev/reference/signals), [NgRx](https://ngrx.io/)
