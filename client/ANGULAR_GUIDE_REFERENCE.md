@@ -409,8 +409,10 @@
 
 - **개념**: 라우팅, canActivate 등
 - **실전 팁**: 라우트 가드는 인증/권한 체크, 데이터 프리패치 등에 활용합니다. 라우트 순서와 와일드카드 경로(\*\*) 위치에 주의하세요.
-- **실제 코드**:  
-  `src/app/app-routing.module.ts`
+
+#### Route Configuration
+
+- 라우트는 `app-routing.module.ts`에서 path, component 등으로 배열 형태로 정의합니다.
   ```typescript
   import { Routes } from "@angular/router";
   import { MemberListComponent } from "./members/member-list/member-list.component";
@@ -420,6 +422,25 @@
     // ...
   ];
   ```
+
+#### RouterLink Directive
+
+- 템플릿에서 `<a>` 또는 `<button>` 등에 `routerLink` 디렉티브를 사용해 네비게이션 링크를 만듭니다.
+  ```html
+  <a routerLink="/home" routerLinkActive="active-class">Home</a> <button [routerLink]="['/members', member.userName]">상세</button>
+  ```
+
+#### Router Service (프로그래밍 방식 네비게이션)
+
+- 컴포넌트/서비스에서 조건부로 라우팅이 필요할 때 `Router` 서비스의 `navigate()` 또는 `navigateByUrl()` 메서드를 사용합니다.
+  ```typescript
+  import { Router } from '@angular/router';
+  constructor(private router: Router) {}
+  // ...
+  this.router.navigateByUrl('/about');
+  this.router.navigate(['/members', userName]);
+  ```
+  - 주로 로그인/로그아웃, 폼 제출, 특정 조건에서 이동할 때 활용합니다.
 
 ### 10. Lifecycle Hooks (생명주기 훅)
 
