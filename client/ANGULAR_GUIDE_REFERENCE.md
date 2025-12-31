@@ -1,5 +1,3 @@
-# 목차 (Table of Contents)
-
 - [폴더 구조](#폴더-구조-clientsrcapp)
 - [Angular 핵심 개념](#angular-핵심-개념)
 - [실전 팁](#실전-팁)
@@ -24,6 +22,7 @@
   - [14. Performance Improvement (성능-최적화)](#14-performance-improvement-성능-최적화)
   - [15. 고급 Angular 개념 및 실전 팁](#15-고급-angular-개념-및-실전-팁)
   - [16. Angular 데코레이터 개념 및 예시](#16-angular-데코레이터-개념-및-예시)
+  - [17. Angular 상태 관리: 서비스+RxJS vs NgRx/NGXS/Akita](#17-angular-상태-관리-서비스rxjs-vs-ngrxngxsakita)
 
 # Angular 클라이언트 구조 및 주요 개념
 
@@ -369,10 +368,12 @@ constructor(private accountService: AccountService) {}
 - **개념**: `ng-container`는 실제 DOM 요소를 생성하지 않고, Angular의 구조적 지시자(`*ngIf`, `*ngFor` 등)나 여러 조건/반복을 그룹화할 때 사용하는 가상 컨테이너입니다. 렌더링 결과에 불필요한 div/span 등 추가 DOM이 생기지 않아, 레이아웃에 영향을 주지 않고 템플릿 논리를 깔끔하게 구성할 수 있습니다.
 
 - **주요 용도**:
+
   - 여러 구조적 지시자를 한 곳에 적용해야 할 때
   - 조건부 렌더링, 반복, 템플릿 분기 등에서 불필요한 DOM 트리 생성을 방지할 때
 
 - **실전 예시**:
+
   ```html
   <ng-container *ngIf="isLoggedIn; else guestBlock">
     <span>환영합니다, {{ userName }}님!</span>
@@ -1220,3 +1221,94 @@ constructor(private accountService: AccountService) {}
     ```
 
 - **참고**: 데코레이터는 Angular의 DI(의존성 주입), 컴포넌트/서비스/디렉티브/파이프의 정의 등 Angular의 핵심 구조를 구성하는 필수 요소입니다.
+
+### 17. Angular 상태 관리: 서비스+RxJS vs NgRx/NGXS/Akita
+
+> **Angular에서의 상태 관리(State Management)는 앱의 규모, 복잡성, 협업 환경에 따라 다양한 전략이 존재합니다. 이 섹션에서는 실무에서 가장 많이 쓰는 서비스+RxJS 패턴과 대표적인 상태 관리 라이브러리(NgRx, NGXS, Akita)의 도입 기준, 실전 예시, 장단점을 비교합니다.**
+
+#### 1. 서비스+RxJS 패턴
+
+- **개념**: Angular의 DI(의존성 주입)와 RxJS(Observable/Subject/BehaviorSubject 등)를 활용해 서비스에서 상태를 관리하고, 여러 컴포넌트가 구독/변경할 수 있도록 하는 방식입니다.
+- **실전 예시**:
+  ```typescript
+  // account.service.ts
+  @Injectable({ providedIn: 'root' })
+  export class AccountService {
+    private currentUserSource = new BehaviorSubject<User | null>(null);
+    currentUser$ = this.currentUserSource.asObservable();
+    setCurrentUser(user: User | null) {
+      this.currentUserSource.next(user);
+    }
+  }
+  // 컴포넌트에서 구독
+  this.accountService.currentUser$.subscribe(user => ...);
+  ```
+- **장점**:
+  - 러닝커브가 낮고, Angular/RxJS 기본만으로 구현 가능
+  - 작은/중간 규모 앱, 단순 상태, 빠른 개발에 적합
+  - 커스텀 로직, 비동기 흐름, 서비스 간 의존성 처리에 유연
+- **단점**:
+  - 상태가 많아질수록 서비스/컴포넌트 간 의존성, 코드 복잡도 증가
+  - DevTools, Time Travel, Undo/Redo 등 고급 기능 부족
+  - 대규모 협업/테스트/예측 가능성 측면에서 한계
+
+#### 2. NgRx/NGXS/Akita 등 상태 관리 라이브러리
+
+- **개념**: Redux 패턴(단방향 데이터 흐름, Action-Reducer-Store 등)을 Angular에 맞게 확장한 라이브러리로, 전역 상태를 일관성 있게 관리하고, DevTools, 미들웨어, 효과적인 테스트, 예측 가능한 상태 전이 등을 지원합니다.
+- **실전 예시 (NgRx 기준)**:
+  ```typescript
+  // actions.ts
+  export const login = createAction('[Auth] Login', props<{ user: User }>());
+  // reducer.ts
+  const authReducer = createReducer(
+    initialState,
+    on(login, (state, { user }) => ({ ...state, user }))
+  );
+  // selector.ts
+  export const selectUser = (state: AppState) => state.auth.user;
+  // 컴포넌트에서
+  this.store.select(selectUser).subscribe(user => ...);
+  this.store.dispatch(login({ user }));
+  ```
+- **장점**:
+  - 대규모/복잡한 앱에서 상태 일관성, 예측 가능성, 테스트 용이성 극대화
+  - DevTools, Time Travel, Undo/Redo, 미들웨어, 효과적인 디버깅 지원
+  - 명확한 구조(액션-리듀서-이펙트-셀렉터 등)로 협업/유지보수에 강점
+- **단점**:
+  - 러닝커브가 높고, 보일러플레이트 코드가 많음
+  - 작은/단순 앱에는 오버엔지니어링이 될 수 있음
+  - 초기 설계/구조화에 시간 소요
+
+#### 3. 도입 기준/실전 선택 가이드
+
+- **서비스+RxJS 추천**:
+  - 작은~중간 규모, 단순 상태, 빠른 개발, 커스텀 로직이 많은 경우
+  - 상태가 서비스 단위로 명확히 분리될 수 있는 경우
+- **NgRx/NGXS/Akita 추천**:
+  - 대규모/복잡한 앱, 협업, 상태 추적/디버깅/Undo/Redo/DevTools가 중요한 경우
+  - 상태가 여러 도메인/기능에 걸쳐 공유·변경되고, 예측 가능성이 중요한 경우
+
+#### 4. 참고 자료
+-
+---
+#### NgRx / NGXS / Akita 간단 비교 및 실무 팁 (Angular 관점)
+
+- **NgRx**: Redux 패턴을 Angular에 맞게 확장. 액션, 리듀서, 이펙트, 셀렉터 등 구조가 명확. DevTools, 미들웨어, Time Travel 지원. 난이도는 Redux와 비슷하거나 약간 더 높음(타입, 이펙트, 보일러플레이트 등).
+- **NGXS**: NgRx보다 문법이 간결하고, 러닝커브가 낮음. 데코레이터 기반, 코드량 적음.
+- **Akita**: 실용적이고 유연한 상태 관리. 러닝커브는 NgRx < Akita < NGXS 순.
+
+**정리**
+- 서비스+RxJS: 간단/중소규모에 적합
+- NgRx/NGXS/Akita: 대규모/복잡/협업, 예측 가능성, DevTools 필요 시 적합
+- 난이도: 서비스+RxJS < NGXS/Akita < NgRx
+
+**실무 팁**
+- 작은 앱/단순 상태: 서비스+RxJS, NGXS, Akita
+- 대규모/복잡/협업: NgRx (구조화, 예측 가능성, DevTools)
+
+- [Angular 공식 상태 관리 가이드](https://angular.kr/guide/state-management)
+- [NgRx 공식 문서](https://ngrx.io/)
+- [NGXS 공식 문서](https://www.ngxs.io/)
+- [Akita 공식 문서](https://datorama.github.io/akita/)
+
+# 목차 (Table of Contents)
