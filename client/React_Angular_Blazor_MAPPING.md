@@ -2,95 +2,23 @@
 
 ---
 
-## Fragment/Template/비동기 & 고급/최적화/특수 패턴 비교
+## 개뵨 개념
 
-### (1) Fragment/Template/비동기
-
-| 개념/패턴              | React 예시                                         | Angular 예시                                                | Blazor 예시                                                                                                                                                                              |
-| ---------------------- | -------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Fragment/Template**  | `<></>` (Fragment, no extra DOM) <br/>`<Fragment>` | `<ng-container>`, `<ng-template>` (구조적, DOM 미추가)      | `@key`, `@attributes`, `RenderFragment` (구조적/동적 렌더링)<br/>`<ChildContent>@context.Name</ChildContent>`<br/>`Parent.razor: <ChildComponent ChildContent="@(() => <h1>Hi</h1>)" />` |
-| **비동기/데이터 흐름** | Promise → `.then()`, `await`, Suspense(비동기 UI)  | Observable → `subscribe()`, async pipe, Signal → `effect()` | `Task`, `async/await`, `EventCallback`, `StateHasChanged()`, `await foreach`                                                                                                             |
-
-> **비동기 UI 처리 요약**: React는 Suspense/Promise, Angular는 async pipe/Observable, Blazor는 await/Task/EventCallback 등으로 비동기 데이터와 UI를 연결합니다.
-
-### (2) 고급/최적화/특수 패턴 비교
-
-| 개념/패턴               | React 예시                                                       | Angular 예시                                              | Blazor 예시                                    |
-| ----------------------- | ---------------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------- |
-| **상태/불변성**         | useState, map/filter/spread, 직접 변경 금지                      | 서비스+RxJS, (상대적으로 자유)                            | StateContainer, (상대적으로 자유)              |
-| **전역 상태관리**       | Redux, Context API, prop drilling→Context                        | NgRx, 서비스+RxJS, DI                                     | Fluxor, 서비스, CascadingParameter             |
-| **라이프사이클/훅**     | useEffect, useMemo, useCallback, useRef, useContext, Custom Hook | ngOnInit, ngOnDestroy, ngAfterViewInit 등                 | OnInitialized, OnParametersSetAsync, Dispose   |
-| **커스텀 훅/파이프**    | Custom Hook (재사용 로직, DOM 제어는 제한적)                     | Pipe (`@Pipe`)                                            | ValueConverter, Custom Method                  |
-| **폼/입력/유효성검사**  | Controlled/Uncontrolled, Formik, Yup, useForm                    | ngModel, Reactive Forms, Validators                       | bind-Value, EditForm, DataAnnotationsValidator |
-| **DOM 참조/Ref**        | useRef, ref                                                      | @ViewChild, ElementRef                                    | @ref, ElementReference                         |
-| **조건/반복/렌더링**    | {cond && <div/>}, arr.map(), Fragment, Virtual DOM               | *ngIf, *ngFor, <ng-container>, ChangeDetection            | @if, @foreach, @key, Virtualize                |
-| **라이프사이클/최적화** | React.memo, useMemo, useCallback (실제 병목일 때만), StrictMode  | OnPush, trackBy, Virtual Scroll, Pure Pipe, Strict DI/AOT | ShouldRender, Virtualize, Hot Reload           |
-| **테스트/테스팅**       | Jest, React Testing Library, Cypress                             | Jasmine, Karma, Protractor                                | xUnit, bUnit, Playwright                       |
-
----
-
-## 실전 팁/전환 주의점 (통합)
-
-- **테스트/테스팅**: React(Jest, React Testing Library, Cypress), Angular(Jasmine, Karma, Protractor, Jest), Blazor(xUnit, bUnit, Playwright, e2e) 등 각 프레임워크별 테스트 도구/전략을 숙지하세요.
-- **StrictMode/개발 도구**: React(StrictMode), Angular(Strict DI/AOT), Blazor(Hot Reload 등)로 개발 생산성과 안정성을 높일 수 있습니다.
-- **서버 상태 관리**: React Query/SWR, Angular HttpClient+RxJS, Blazor HttpClient/서비스로 서버 데이터 동기화/캐싱 최적화. (아래 FAQ 참고)
-- **보안/인증**: React(BFF, XSS/CSRF, JWT, [BFF 패턴 예시](https://martinfowler.com/articles/bff.html)), Angular(HttpOnly, DI, [보안 가이드](https://angular.io/guide/security)), Blazor(ASP.NET Core Identity, 인증/인가, DI, [Blazor 인증](https://learn.microsoft.com/aspnet/core/blazor/security/)) 실전 예시/링크 참고.
-- **불변성(immutability)**: React는 state를 직접 변경하지 않고 map/filter/spread 등으로 새 객체를 만들어야 함. Angular/Blazor는 상대적으로 자유.
-- **Prop drilling**: React는 Context API로, Angular/Blazor는 DI/서비스로 깊은 props 전달 문제 해결.
-- **useMemo/useCallback/React.memo**: 실제 연산 비용이 크거나 렌더링 병목일 때만 사용. 남용 시 가독성/성능 저하.
-- **dangerouslySetInnerHTML**: XSS 위험. 꼭 필요한 경우만 사용, 외부 데이터는 sanitize 필수. Angular는 DomSanitizer, Blazor는 MarkupString.
-- **Blazor 실행/렌더링 모델**: Blazor는 SSR/Server/WebAssembly/Hybrid/MAUI 등 다양한 실행/렌더링 방식을 지원. React/Angular는 주로 CSR/SSR. Blazor SSR은 서버에서 HTML만 렌더, Server/WasM은 SignalR/브라우저에서 상호작용.
-- **폼/쿼리 파라미터 바인딩**: Blazor의 [SupplyParameterFromForm], [SupplyParameterFromQuery]는 Angular의 ActivatedRoute, React의 useSearchParams와 유사. 폼/쿼리 파라미터를 직접 바인딩할 수 있음.
-- **Arbitrary Attributes**: Blazor의 @attributes, [Parameter(CaptureUnmatchedValues)]는 React의 ...rest, Angular의 [attr.xxx]와 유사. 임의 속성 전달에 활용.
-- **Virtualize, @key**: Blazor의 <Virtualize>, @key는 Angular의 \*cdkVirtualFor, React의 react-window, key prop과 유사. 대량 리스트/가상화 필수.
-- **DynamicComponent**: Blazor의 DynamicComponent는 React의 createElement/lazy, Angular의 ViewContainerRef.createComponent와 유사. 런타임 동적 컴포넌트 렌더링.
-- **EditForm/유효성검사**: Blazor의 EditForm+DataAnnotationsValidator는 Angular의 Reactive Forms, React의 Formik/Yup과 유사. C# 모델 기반 검증.
-- **JS Interop**: Blazor의 JS Interop은 React의 useEffect+window, Angular의 ElementRef/Renderer2와 유사. JS 모듈/함수 호출 가능.
-- **NavigationLock/ErrorBoundary**: Blazor의 NavigationLock, ErrorBoundary는 React의 usePrompt/ErrorBoundary, Angular의 CanDeactivate/ErrorHandler와 유사. 페이지 이탈 방지/에러 처리.
-- **페이지 메타데이터**: Blazor의 PageTitleService는 React의 react-helmet, Angular의 Title과 유사. 동적 타이틀/메타데이터 관리.
-
-> **실무 팁**: 각 프레임워크의 “컴포넌트-상태-이벤트-라우팅-폼-서비스” 흐름을 매핑하면, 전환/비교/학습이 훨씬 쉬워집니다. Blazor는 C# 기반 Razor 문법, Angular는 데코레이터+타입스크립트, React는 함수형+JSX가 기본입니다. 각 셀의 코드는 실제 프로젝트에서 바로 쓸 수 있는 최소 예시 위주로 작성했습니다.
-> **Q. React Query/SWR vs Angular/Blazor 서버 상태 관리 실전 예시?**
-> A. React Query/SWR는 useQuery/useMutation으로 서버 데이터 fetch/caching/동기화/낙관적 업데이트를 지원합니다. Angular는 HttpClient+RxJS(Observable), Blazor는 HttpClient/서비스 패턴을 사용합니다.
-
-```js
-// React 예시
-import { useQuery } from "react-query";
-const { data, isLoading } = useQuery(["users"], () => fetch("/api/users").then((res) => res.json()));
-```
-
-```typescript
-// Angular 예시
-this.http.get<User[]>('/api/users').subscribe(users => ...);
-```
-
-```csharp
-// Blazor 예시 (서비스 DI)
-@inject HttpClient Http
-var users = await Http.GetFromJsonAsync<List<User>>("/api/users");
-```
-
-\*\*\* End Patch
-
-## 기본 개념
-
-| 개념/패턴                | React 예시                                           | Angular 예시                                  | Blazor 예시                                                                                                             |
-| ------------------------ | ---------------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **컴포넌트 선언**        | `function MyComp() {}`<br/>`export default MyComp;`  | `@Component ...`<br/>`export class MyComp {}` | `MyComp.razor`<br/>`@code { ... }`                                                                                      |
-| **상태(State)**          | `const [cnt, setCnt] = useState(0)`<br/>`this.state` | `@Input()`, 서비스+RxJS                       | `@code { int cnt = 0; }`                                                                                                |
-| **Props/Input**          | `props`                                              | `@Input()`                                    | `[Parameter]`                                                                                                           |
-| **이벤트 바인딩**        | `<button onClick={fn}>`                              | `<button (click)="fn()">`                     | `<button @onclick="fn">`                                                                                                |
-| **양방향 바인딩**        | 없음(수동 처리)<br/>`value/onChange`                 | `[(ngModel)]`                                 | `bind-Value`                                                                                                            |
-| **라우팅**               | `<Route path=... />`<br/>`react-router`              | `@angular/router`<br/>`<router-outlet>`       | `<NavLink>`, `Router`                                                                                                   |
-| **DI/서비스**            | Context API, custom hooks<br/>`useContext()`         | 서비스+DI<br/>`@Injectable()`                 | 서비스+DI, `[Inject] MyService MyService { get; set; }`                                                                 |
-| **라이프사이클**         | `useEffect`, `componentDidMount`                     | `ngOnInit`, `ngOnDestroy`                     | `OnInitialized`, `Dispose`                                                                                              |
-| **조건부 렌더링**        | `{cond && <div/>}`                                   | `*ngIf`                                       | `@if (cond) { ... }`                                                                                                    |
-| **반복 렌더링**          | `{arr.map()}`                                        | `*ngFor`                                      | `@foreach`                                                                                                              |
-| **스타일/클래스 바인딩** | `className`, `style`                                 | `[ngClass]`, `[ngStyle]`                      | `class=...`, `style=...`                                                                                                |
-| **폼/입력**              | `onChange`, `value`                                  | `ngModel`, Reactive Forms                     | `bind-Value`, `EditForm`                                                                                                |
-| **커스텀 훅/파이프**     | Custom Hook (재사용 로직)                            | Pipe (데이터 변환)                            | ValueConverter (데이터 변환)                                                                                            |
-| **전역 상태관리**        | Redux, Context                                       | NgRx, 서비스+RxJS                             | Fluxor, 서비스, CascadingParameter, StateContainer<br/>`public class StateContainer { public int Value { get; set; } }` |
-| **DOM 참조/Ref**         | `useRef()`, `ref`                                    | `@ViewChild`, `ElementRef`                    | `@ref`, `ElementReference`                                                                                              |
+| **컴포넌트 선언** | `function MyComp() {}`<br/>`export default MyComp;` | `@Component ...`<br/>`export class MyComp {}` | `MyComp.razor`<br/>`@code { ... }` |
+| **상태(State)** | `const [cnt, setCnt] = useState(0)`<br/>`this.state` | `@Input()`, 서비스+RxJS | `@code { int cnt = 0; }` |
+| **Props/Input** | `props` | `@Input()` | `[Parameter]` |
+| **이벤트 바인딩** | `<button onClick={fn}>` | `<button (click)="fn()">` | `<button @onclick="fn">` |
+| **양방향 바인딩** | 없음(수동 처리)<br/>`value/onChange` | `[(ngModel)]` | `bind-Value` |
+| **라우팅** | `<Route path=... />`<br/>`react-router` | `@angular/router`<br/>`<router-outlet>` | `<NavLink>`, `Router` |
+| **DI/서비스** | Context API, custom hooks<br/>`useContext()` | 서비스+DI<br/>`@Injectable()` | 서비스+DI, `[Inject] MyService MyService { get; set; }` |
+| **라이프사이클** | `useEffect`, `componentDidMount` | `ngOnInit`, `ngOnDestroy` | `OnInitialized`, `Dispose` |
+| **조건부 렌더링** | `{cond && <div/>}` | `*ngIf` | `@if (cond) { ... }` |
+| **반복 렌더링** | `{arr.map()}` | `*ngFor` | `@foreach` |
+| **스타일/클래스 바인딩** | `className`, `style` | `[ngClass]`, `[ngStyle]` | `class=...`, `style=...` |
+| **폼/입력** | `onChange`, `value` | `ngModel`, Reactive Forms | `bind-Value`, `EditForm` |
+| **커스텀 훅/파이프** | Custom Hook (재사용 로직) | Pipe (데이터 변환) | ValueConverter (데이터 변환) |
+| **전역 상태관리** | Redux, Context | NgRx, 서비스+RxJS | Fluxor, 서비스, CascadingParameter, StateContainer<br/>`public class StateContainer { public int Value { get; set; } }` |
+| **DOM 참조/Ref** | `useRef()`, `ref` | `@ViewChild`, `ElementRef` | `@ref`, `ElementReference` |
 
 ---
 
