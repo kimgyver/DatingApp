@@ -1,13 +1,77 @@
-# React ↔ Angular ↔ Blazor 주요 개념/코드 1:1 매핑
-
 ## 목차
 
 - [기본 개념](#기본-개념)
-- [고급/최적화/패턴](#고급최적화패턴)
+- [고급/최적화/특수-패턴-비교](#고급최적화특수-패턴-비교)
 - [Fragment/Template/비동기](#fragmenttemplate비동기)
 - [실전 팁/전환 주의점](#실전-팁전환-주의점)
 
----
+## 고급/최적화/특수 패턴 비교
+
+### (1) 기본/상태/라이프사이클
+
+| **실행/렌더링 모델** | CSR, SSR(Next.js), Hydrate | CSR, SSR(Universal), Hydrate | SSR, Server, WebAssembly, Hybrid, MAUI(Desktop/Mobile) |
+| **테스트/테스팅** | Jest, React Testing Library, Cypress | Jasmine, Karma, Protractor, Jest | xUnit, bUnit, Playwright, e2e |
+
+## Fragment/Template/비동기
+
+### (1) Fragment/Template
+
+| 개념/패턴             | React 예시                                         | Angular 예시                                           | Blazor 예시                                                                                                                                                                              |
+| --------------------- | -------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Fragment/Template** | `<></>` (Fragment, no extra DOM) <br/>`<Fragment>` | `<ng-container>`, `<ng-template>` (구조적, DOM 미추가) | `@key`, `@attributes`, `RenderFragment` (구조적/동적 렌더링)<br/>`<ChildContent>@context.Name</ChildContent>`<br/>`Parent.razor: <ChildComponent ChildContent="@(() => <h1>Hi</h1>)" />` |
+
+### (2) 비동기/데이터 흐름
+
+| 개념/패턴              | React 예시                                        | Angular 예시                                                | Blazor 예시                                                                  |
+| ---------------------- | ------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| **비동기/데이터 흐름** | Promise → `.then()`, `await`, Suspense(비동기 UI) | Observable → `subscribe()`, async pipe, Signal → `effect()` | `Task`, `async/await`, `EventCallback`, `StateHasChanged()`, `await foreach` |
+
+> **비동기 UI 처리 요약**: React는 Suspense/Promise, Angular는 async pipe/Observable, Blazor는 await/Task/EventCallback 등으로 비동기 데이터와 UI를 연결합니다.
+
+## 실전 팁/전환 주의점
+
+- **테스트/테스팅**: React(Jest, React Testing Library, Cypress), Angular(Jasmine, Karma, Protractor, Jest), Blazor(xUnit, bUnit, Playwright, e2e) 등 각 프레임워크별 테스트 도구/전략을 숙지하세요.
+- **StrictMode/개발 도구**: React(StrictMode), Angular(Strict DI/AOT), Blazor(Hot Reload 등)로 개발 생산성과 안정성을 높일 수 있습니다.
+- **서버 상태 관리**: React Query/SWR, Angular HttpClient+RxJS, Blazor HttpClient/서비스로 서버 데이터 동기화/캐싱 최적화. (아래 FAQ 참고)
+- **보안/인증**: React(BFF, XSS/CSRF, JWT, [BFF 패턴 예시](https://martinfowler.com/articles/bff.html)), Angular(HttpOnly, DI, [보안 가이드](https://angular.io/guide/security)), Blazor(ASP.NET Core Identity, 인증/인가, DI, [Blazor 인증](https://learn.microsoft.com/aspnet/core/blazor/security/)) 실전 예시/링크 참고.
+- **불변성(immutability)**: React는 state를 직접 변경하지 않고 map/filter/spread 등으로 새 객체를 만들어야 함. Angular/Blazor는 상대적으로 자유.
+- **Prop drilling**: React는 Context API로, Angular/Blazor는 DI/서비스로 깊은 props 전달 문제 해결.
+- **useMemo/useCallback/React.memo**: 실제 연산 비용이 크거나 렌더링 병목일 때만 사용. 남용 시 가독성/성능 저하.
+- **dangerouslySetInnerHTML**: XSS 위험. 꼭 필요한 경우만 사용, 외부 데이터는 sanitize 필수. Angular는 DomSanitizer, Blazor는 MarkupString.
+- **Blazor 실행/렌더링 모델**: Blazor는 SSR/Server/WebAssembly/Hybrid/MAUI 등 다양한 실행/렌더링 방식을 지원. React/Angular는 주로 CSR/SSR. Blazor SSR은 서버에서 HTML만 렌더, Server/WasM은 SignalR/브라우저에서 상호작용.
+- **폼/쿼리 파라미터 바인딩**: Blazor의 [SupplyParameterFromForm], [SupplyParameterFromQuery]는 Angular의 ActivatedRoute, React의 useSearchParams와 유사. 폼/쿼리 파라미터를 직접 바인딩할 수 있음.
+- **Arbitrary Attributes**: Blazor의 @attributes, [Parameter(CaptureUnmatchedValues)]는 React의 ...rest, Angular의 [attr.xxx]와 유사. 임의 속성 전달에 활용.
+- **Virtualize, @key**: Blazor의 <Virtualize>, @key는 Angular의 \*cdkVirtualFor, React의 react-window, key prop과 유사. 대량 리스트/가상화 필수.
+- **DynamicComponent**: Blazor의 DynamicComponent는 React의 createElement/lazy, Angular의 ViewContainerRef.createComponent와 유사. 런타임 동적 컴포넌트 렌더링.
+- **EditForm/유효성검사**: Blazor의 EditForm+DataAnnotationsValidator는 Angular의 Reactive Forms, React의 Formik/Yup과 유사. C# 모델 기반 검증.
+- **JS Interop**: Blazor의 JS Interop은 React의 useEffect+window, Angular의 ElementRef/Renderer2와 유사. JS 모듈/함수 호출 가능.
+- **NavigationLock/ErrorBoundary**: Blazor의 NavigationLock, ErrorBoundary는 React의 usePrompt/ErrorBoundary, Angular의 CanDeactivate/ErrorHandler와 유사. 페이지 이탈 방지/에러 처리.
+- **페이지 메타데이터**: Blazor의 PageTitleService는 React의 react-helmet, Angular의 Title과 유사. 동적 타이틀/메타데이터 관리.
+
+> **실무 팁**: 각 프레임워크의 “컴포넌트-상태-이벤트-라우팅-폼-서비스” 흐름을 매핑하면, 전환/비교/학습이 훨씬 쉬워집니다. Blazor는 C# 기반 Razor 문법, Angular는 데코레이터+타입스크립트, React는 함수형+JSX가 기본입니다. 각 셀의 코드는 실제 프로젝트에서 바로 쓸 수 있는 최소 예시 위주로 작성했습니다.
+> **Q. React Query/SWR vs Angular/Blazor 서버 상태 관리 실전 예시?**
+> A. React Query/SWR는 useQuery/useMutation으로 서버 데이터 fetch/caching/동기화/낙관적 업데이트를 지원합니다. Angular는 HttpClient+RxJS(Observable), Blazor는 HttpClient/서비스 패턴을 사용합니다.
+
+```js
+// React 예시
+import { useQuery } from "react-query";
+const { data, isLoading } = useQuery(["users"], () => fetch("/api/users").then((res) => res.json()));
+```
+
+```typescript
+// Angular 예시
+this.http.get<User[]>('/api/users').subscribe(users => ...);
+```
+
+```csharp
+// Blazor 예시 (서비스 DI)
+@inject HttpClient Http
+var users = await Http.GetFromJsonAsync<List<User>>("/api/users");
+```
+
+# React ↔ Angular ↔ Blazor 주요 개념/코드 1:1 매핑
+
+\*\*\* End Patch
 
 ## 기본 개념
 
@@ -31,18 +95,40 @@
 
 ---
 
-## 고급/최적화/패턴
+## 고급/최적화/특수 패턴 비교
 
-| 개념/패턴                  | React 예시                                    | Angular 예시                                                                                                                               | Blazor 예시                                   |
-| -------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
-| **커스텀 디렉티브/훅**     | Custom Hook (재사용 로직, DOM 제어는 제한적)  | Custom Directive (`@Directive`, DOM 제어/재사용)                                                                                           | Attribute/Child Component (속성/구성 재사용)  |
-| **HostBinding/Listener**   | 없음 (inline style/class, useEffect로 이벤트) | `@HostBinding`, `@HostListener`                                                                                                            | 없음 (이벤트는 @onXXX, 스타일은 속성)         |
-| **Content Projection**     | `{props.children}`                            | `<ng-content>`                                                                                                                             | `ChildContent`, `RenderFragment`              |
-| **커스텀 파이프/변환**     | 없음 (함수/Custom Hook)                       | Pipe (`@Pipe`)                                                                                                                             | ValueConverter, Custom Method                 |
-| **RxJS/Observable 연산자** | 없음 (Promise/Array method)                   | RxJS 연산자(map, switchMap, filter 등)                                                                                                     | 없음 (LINQ/Task/이벤트)                       |
-| **Signal/반응성 상태**     | 없음 (useState/useEffect 기반)                | Signal, effect(), computed()<br/>`count = signal(0); effect(() => console.log(count()));`<br/>`doubleCount = computed(() => count() * 2);` | 없음 (StateHasChanged, EventCallback 등 수동) |
-| **ChangeDetection/최적화** | React.memo, useMemo, key, Virtual DOM         | OnPush, trackBy, Virtual Scroll, Pure Pipe                                                                                                 | ShouldRender, Virtualize                      |
-| **데코레이터/메타**        | 없음 (HOC, 함수 조합)                         | @Component, @Injectable, @Input, @Output 등                                                                                                | [Parameter], [Inject], [CascadingParameter]   |
+### (1) 기본/상태/라이프사이클
+
+| 개념/패턴               | React 예시                                                       | Angular 예시                                              | Blazor 예시                                    |
+| ----------------------- | ---------------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------- |
+| **상태/불변성**         | useState, map/filter/spread, 직접 변경 금지                      | 서비스+RxJS, (상대적으로 자유)                            | StateContainer, (상대적으로 자유)              |
+| **전역 상태관리**       | Redux, Context API, prop drilling→Context                        | NgRx, 서비스+RxJS, DI                                     | Fluxor, 서비스, CascadingParameter             |
+| **라이프사이클/훅**     | useEffect, useMemo, useCallback, useRef, useContext, Custom Hook | ngOnInit, ngOnDestroy, ngAfterViewInit 등                 | OnInitialized, OnParametersSetAsync, Dispose   |
+| **커스텀 훅/파이프**    | Custom Hook (재사용 로직, DOM 제어는 제한적)                     | Pipe (`@Pipe`)                                            | ValueConverter, Custom Method                  |
+| **폼/입력/유효성검사**  | Controlled/Uncontrolled, Formik, Yup, useForm                    | ngModel, Reactive Forms, Validators                       | bind-Value, EditForm, DataAnnotationsValidator |
+| **DOM 참조/Ref**        | useRef, ref                                                      | @ViewChild, ElementRef                                    | @ref, ElementReference                         |
+| **조건/반복/렌더링**    | {cond && <div/>}, arr.map(), Fragment, Virtual DOM               | *ngIf, *ngFor, <ng-container>, ChangeDetection            | @if, @foreach, @key, Virtualize                |
+| **라이프사이클/최적화** | React.memo, useMemo, useCallback (실제 병목일 때만), StrictMode  | OnPush, trackBy, Virtual Scroll, Pure Pipe, Strict DI/AOT | ShouldRender, Virtualize, Hot Reload           |
+| **테스트/테스팅**       | Jest, React Testing Library, Cypress                             | Jasmine, Karma, Protractor                                | xUnit, bUnit, Playwright                       |
+
+### (2) 고급/특수 패턴/아키텍처
+
+| 개념/패턴                          | React 예시                                                                              | Angular 예시                                                                    | Blazor 예시                                                                                                      |
+| ---------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Raw HTML 렌더링**                | dangerouslySetInnerHTML                                                                 | [innerHTML], DomSanitizer                                                       | MarkupString                                                                                                     |
+| **서버 상태 관리**                 | React Query, SWR                                                                        | HttpClient+RxJS, NgRx                                                           | HttpClient, 서비스                                                                                               |
+| **브라우저 호환성**                | Polyfill, core-js                                                                       | Polyfill, Zone.js                                                               | JS interop 필요시                                                                                                |
+| **보안/인증**                      | XSS/CSRF 방지, BFF, JWT<br/>[BFF 패턴 예시](https://martinfowler.com/articles/bff.html) | 보안 가이드, HttpOnly, DI<br/>[Angular 보안](https://angular.io/guide/security) | ASP.NET Core Identity, 인증/인가, DI<br/>[Blazor 인증](https://learn.microsoft.com/aspnet/core/blazor/security/) |
+| **실행/렌더링 모델**               | CSR, SSR(Next.js), Hydrate                                                              | CSR, SSR(Universal), Hydrate                                                    | SSR, Server, WebAssembly, Hybrid                                                                                 |
+| **폼/쿼리 파라미터 바인딩**        | props, useSearchParams, Formik                                                          | @Input, ActivatedRoute.queryParams                                              | [Parameter], [SupplyParameterFromForm/Query]                                                                     |
+| **Arbitrary Attributes**           | {...rest}                                                                               | [attr.xxx]                                                                      | @attributes, [Parameter(CaptureUnmatchedValues)]                                                                 |
+| **동적 컴포넌트**                  | React.createElement, lazy                                                               | ViewContainerRef.createComponent                                                | <DynamicComponent Type=... Parameters=... />                                                                     |
+| **JS Interop**                     | window, useEffect, ref                                                                  | ElementRef, Renderer2, JS interop                                               | IJSRuntime, .razor.js, JS 모듈                                                                                   |
+| **Navigation Guard**               | usePrompt, react-router                                                                 | CanDeactivate guard                                                             | <NavigationLock>                                                                                                 |
+| **Error Boundary**                 | <ErrorBoundary>                                                                         | ErrorHandler                                                                    | <ErrorBoundary>                                                                                                  |
+| **페이지 메타데이터**              | react-helmet, document.title                                                            | Title service                                                                   | PageTitleService                                                                                                 |
+| **데코레이터/메타**                | 없음 (HOC, 함수 조합)                                                                   | @Component, @Injectable, @Input, @Output 등                                     | [Parameter], [Inject], [CascadingParameter]                                                                      |
+| **Route Resolver/데이터 프리패치** | loader (react-router v6+), useEffect+Suspense, 라우트 진입 전 fetch/await               | Route Resolver (resolve), 라우트 등록 시 데이터 프리패치, route.snapshot.data   | OnParametersSetAsync에서 await 데이터, 라우트 파라미터 변경 시 데이터 fetch, 상위에서 Task 전달 등               |
 
 ---
 
@@ -59,17 +145,28 @@
 
 ## 실전 팁/전환 주의점
 
-- **커스텀 디렉티브/훅**: Angular의 `@Directive`는 DOM 제어/재사용 로직에, React는 Custom Hook(로직 재사용), Blazor는 Attribute/Child Component로 유사 기능 구현. 용도/역할이 다르니 전환 시 주의.
-- **HostBinding/Listener**: Angular만 데코레이터로 스타일/이벤트 바인딩. React/Blazor는 인라인/속성/이벤트 핸들러 사용.
-- **Content Projection**: React는 `{children}`, Angular는 `<ng-content>`, Blazor는 `ChildContent`/`RenderFragment`로 슬롯/템플릿 전달.
-- **커스텀 파이프/변환**: Angular Pipe, Blazor ValueConverter/메서드, React는 함수/훅으로 변환 처리. Blazor는 C# 메서드/ValueConverter, Angular는 @Pipe, React는 함수/훅 활용.
-- **RxJS 연산자**: Angular만 RxJS 연산자(map, switchMap 등)로 비동기/스트림 처리. React/Blazor는 없음.
-- **Signal/반응성**: Angular 17+ Signal, effect()로 반응성 상태 관리. React는 useState/useEffect, Blazor는 StateHasChanged 등 수동 갱신.
-- **ChangeDetection/최적화**: Angular OnPush, trackBy, Virtual Scroll, React.memo/useMemo, Blazor ShouldRender/Virtualize 등 각 프레임워크별 최적화 기법 존재.
-- **데코레이터/메타**: Angular/Blazor는 데코레이터/속성 기반 메타프로그래밍, React는 HOC/함수 조합.
-- **DOM 참조/Ref**: React의 `useRef()`/`ref`는 DOM 요소나 컴포넌트 인스턴스에 직접 접근할 때 사용. Angular는 `@ViewChild`, `ElementRef`, Blazor는 `@ref`, `ElementReference`로 유사하게 DOM/컴포넌트 참조.
-- **Blazor DI/상태관리**: `[Inject] MyService MyService { get; set; }`, `CascadingParameter`, `StateContainer`, `Fluxor` 등 다양한 패턴 존재. 전역 상태는 서비스/Fluxor/컨테이너 패턴 활용.
-- **비동기 데이터 흐름**: React는 Promise/Suspense, Angular는 Observable/async pipe/Signal, Blazor는 Task/await/EventCallback/StateHasChanged 등으로 UI와 데이터 연결. Blazor의 `await foreach`는 실시간 데이터 처리에 유용.
+- **테스트/테스팅**: React(Jest, React Testing Library, Cypress), Angular(Jasmine, Karma, Protractor), Blazor(xUnit, bUnit, Playwright) 등 각 프레임워크별 테스트 도구/전략을 숙지하세요.
+- **StrictMode/개발 도구**: React(StrictMode), Angular(Strict DI/AOT), Blazor(Hot Reload 등)로 개발 생산성과 안정성을 높일 수 있습니다.
+- **서버 상태 관리**: React Query/SWR, Angular HttpClient+RxJS, Blazor HttpClient/서비스로 서버 데이터 동기화/캐싱 최적화. (아래 FAQ 참고)
+- **보안/인증**: React(BFF, XSS/CSRF, JWT), Angular(HttpOnly, DI, 보안 가이드), Blazor(ASP.NET Core Identity, 인증/인가, DI) 실전 예시/링크 참고.
+
+- **불변성(immutability)**: React는 state를 직접 변경하지 않고 map/filter/spread 등으로 새 객체를 만들어야 함. Angular/Blazor는 상대적으로 자유.
+- **Prop drilling**: React는 Context API로, Angular/Blazor는 DI/서비스로 깊은 props 전달 문제 해결.
+- **useMemo/useCallback/React.memo**: 실제 연산 비용이 크거나 렌더링 병목일 때만 사용. 남용 시 가독성/성능 저하.
+- **dangerouslySetInnerHTML**: XSS 위험. 꼭 필요한 경우만 사용, 외부 데이터는 sanitize 필수. Angular는 DomSanitizer, Blazor는 MarkupString.
+- **StrictMode**: React 개발 전용, 잠재적 문제 탐지. Angular는 Strict DI/AOT, Blazor는 별도 없음.
+- **서버 상태 관리**: React Query/SWR, Angular HttpClient+RxJS, Blazor HttpClient/서비스로 서버 데이터 동기화/캐싱 최적화.
+- **보안/인증**: React는 XSS/CSRF/BFF/토큰 관리, Angular는 HttpOnly/DI, Blazor는 ASP.NET Core Identity/DI 활용.
+
+- **Blazor 실행/렌더링 모델**: Blazor는 SSR/Server/WebAssembly 등 다양한 실행/렌더링 방식을 지원. React/Angular는 주로 CSR/SSR. Blazor SSR은 서버에서 HTML만 렌더, Server/WasM은 SignalR/브라우저에서 상호작용.
+- **폼/쿼리 파라미터 바인딩**: Blazor의 [SupplyParameterFromForm], [SupplyParameterFromQuery]는 Angular의 ActivatedRoute, React의 useSearchParams와 유사. 폼/쿼리 파라미터를 직접 바인딩할 수 있음.
+- **Arbitrary Attributes**: Blazor의 @attributes, [Parameter(CaptureUnmatchedValues)]는 React의 ...rest, Angular의 [attr.xxx]와 유사. 임의 속성 전달에 활용.
+- **Virtualize, @key**: Blazor의 <Virtualize>, @key는 Angular의 \*cdkVirtualFor, React의 react-window, key prop과 유사. 대량 리스트/가상화 필수.
+- **DynamicComponent**: Blazor의 DynamicComponent는 React의 createElement/lazy, Angular의 ViewContainerRef.createComponent와 유사. 런타임 동적 컴포넌트 렌더링.
+- **EditForm/유효성검사**: Blazor의 EditForm+DataAnnotationsValidator는 Angular의 Reactive Forms, React의 Formik/Yup과 유사. C# 모델 기반 검증.
+- **JS Interop**: Blazor의 JS Interop은 React의 useEffect+window, Angular의 ElementRef/Renderer2와 유사. JS 모듈/함수 호출 가능.
+- **NavigationLock/ErrorBoundary**: Blazor의 NavigationLock, ErrorBoundary는 React의 usePrompt/ErrorBoundary, Angular의 CanDeactivate/ErrorHandler와 유사. 페이지 이탈 방지/에러 처리.
+- **페이지 메타데이터**: Blazor의 PageTitleService는 React의 react-helmet, Angular의 Title과 유사. 동적 타이틀/메타데이터 관리.
 
 > **실무 팁**: 각 프레임워크의 “컴포넌트-상태-이벤트-라우팅-폼-서비스” 흐름을 매핑하면, 전환/비교/학습이 훨씬 쉬워집니다. Blazor는 C# 기반 Razor 문법, Angular는 데코레이터+타입스크립트, React는 함수형+JSX가 기본입니다. 각 셀의 코드는 실제 프로젝트에서 바로 쓸 수 있는 최소 예시 위주로 작성했습니다.
 
@@ -77,13 +174,53 @@
 
 ### 실전 FAQ: 전환 시 가장 많이 실수하는 부분 TOP3
 
+**Q. React에서 state를 직접 변경하면 안 되는 이유는?**
+A. React는 불변성 기반으로 변경 감지(shallow equality)하므로, 직접 변경(push/splice 등)하면 UI가 갱신되지 않거나 버그가 발생할 수 있음. 항상 map/filter/spread 등으로 새 객체를 만들어야 함.
+
+**Q. React에서 prop drilling이란?**
+A. 여러 단계로 props를 전달하는 현상. Context API로 해결, Angular/Blazor는 DI/서비스로 해결.
+
+**Q. useMemo/useCallback/React.memo는 언제 써야 하나요?**
+A. 연산 비용이 크거나 렌더링 병목일 때만 사용. 남용하면 오히려 성능/가독성 저하.
+
+**Q. dangerouslySetInnerHTML은 언제 써야 하나요?**
+A. 외부 HTML을 렌더링해야 할 때만 사용. XSS 위험이 있으므로 반드시 sanitize 필요. Angular는 DomSanitizer, Blazor는 MarkupString 사용.
+
+**Q. React Query/SWR vs Angular/Blazor 서버 상태 관리 실전 예시?**
+A. React Query/SWR는 useQuery/useMutation으로 서버 데이터 fetch/caching/동기화/낙관적 업데이트를 지원합니다. Angular는 HttpClient+RxJS(Observable), Blazor는 HttpClient/서비스 패턴을 사용합니다.
+
+// React 예시
+import { useQuery } from 'react-query';
+const { data, isLoading } = useQuery(['users'], () => fetch('/api/users').then(res => res.json()));
+
+// Angular 예시
+this.http.get<User[]>('/api/users').subscribe(users => ...);
+
+// Blazor 예시 (서비스 DI)
+@inject HttpClient Http
+var users = await Http.GetFromJsonAsync<List<User>>("/api/users");
+
+**Q. StrictMode/개발 도구는 실제 배포에 영향 있나요?**
+A. React의 StrictMode, Angular의 Strict DI/AOT, Blazor의 Hot Reload 등은 개발 전용 도구로, 잠재적 문제 탐지/개발 생산성 향상에만 사용됩니다. 실제 빌드/배포에는 영향 없음.
+
 1. **상태/참조 관리**: React의 useRef/useState, Angular의 Signal/Service, Blazor의 StateContainer/서비스/Fluxor 등 상태/참조 방식이 달라 직접 치환이 안 되는 경우가 많음. 각 프레임워크의 상태/참조 흐름을 먼저 익히세요.
 2. **비동기 데이터 처리**: React의 Promise/Suspense, Angular의 Observable/async pipe, Blazor의 Task/await/EventCallback 등 비동기 처리 방식이 달라, 단순히 함수만 옮기면 UI가 갱신되지 않거나 메모리릭이 발생할 수 있음.
 3. **Content Projection/Slot**: React의 children, Angular의 ng-content, Blazor의 ChildContent/RenderFragment는 구조/사용법이 다르므로, slot/템플릿 전달 시 문법과 라이프사이클 차이를 반드시 확인하세요.
 
----
+**Q. Blazor의 SSR/Server/WasM 차이점은?**
+A. SSR은 서버에서 HTML만 렌더, Server/WasM은 SignalR/브라우저에서 상호작용. Server는 보안/상태관리 강점, WasM은 클라이언트 실행(대규모/보안 낮은 서비스에 적합). @rendermode, Pre-render, StateHasChanged 등 렌더링/상태 동기화에 주의.
 
-### 실무 FAQ: 자주 묻는 질문
+**Q. Blazor에서 Virtualize, @key는 언제 꼭 써야 하나요?**
+A. 대량 리스트/가상화 시 <Virtualize>와 @key 필수. 리스트 순서 변경/삭제 시 상태 꼬임 방지, 성능 최적화에 중요.
+
+**Q. Blazor에서 JS 라이브러리/함수는 어떻게 쓰나요?**
+A. wwwroot에 .js 배치 후 IJSRuntime으로 import/invoke. 예외/에러 처리 필수. React/Angular의 JS interop과 유사.
+
+**Q. Blazor에서 폼/쿼리 파라미터 바인딩은?**
+A. [SupplyParameterFromForm], [SupplyParameterFromQuery]로 폼/쿼리 파라미터를 직접 바인딩. Angular의 ActivatedRoute, React의 useSearchParams와 유사.
+
+**Q. Blazor에서 NavigationLock, ErrorBoundary, 페이지 타이틀은?**
+A. NavigationLock은 페이지 이탈 방지, ErrorBoundary는 자식 컴포넌트 에러 처리, PageTitleService는 동적 타이틀 관리. React/Angular의 유사 기능과 비교해 활용.
 
 **Q. RxJS 없이 Angular에서 비동기 처리하려면?**
 A. Angular 17+에서는 Signal, async pipe, Promise를 활용할 수 있습니다. 간단한 비동기는 Promise/async pipe, 복잡한 스트림은 RxJS 권장.
@@ -94,4 +231,4 @@ A. RenderFragment를 파라미터로 넘기면 됩니다. `<ChildComponent Child
 **Q. React에서 useRef와 useState의 차이는?**
 A. useRef는 DOM/값 참조(변경해도 렌더링X), useState는 상태(변경 시 렌더링O) 관리용입니다.
 
-더 많은 매핑이 필요하면 언제든 요청해 주세요!
+더 많은 매핑/실전 팁이 필요하면 언제든 요청해 주세요!

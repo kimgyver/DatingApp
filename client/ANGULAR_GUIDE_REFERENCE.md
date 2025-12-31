@@ -27,6 +27,39 @@
 
 # Angular 클라이언트 구조 및 주요 개념
 
+## Angular 17+ 최신 기능 요약
+
+- **Signal**: 간단한 상태 관리, computed/effect 지원, RxJS보다 직관적
+- **Standalone Component**: 모듈 없이 컴포넌트만으로 앱 구성 가능
+- **Control Flow**: @for, @if 등 템플릿 제어문 공식 지원
+- **Zone-less**: zone.js 없이도 동작, 성능 개선
+- **SSR/SSG/Hydration**: 서버 사이드 렌더링, 정적 사이트 생성, Hydration 지원 강화
+- **빌드 최적화**: ng build --configuration production, 환경변수 관리
+
+> **예시: Control Flow**
+
+```html
+@if (isLoading) {
+<div>로딩 중...</div>
+} @for (let item of items; track item.id) {
+<div>{{ item.name }}</div>
+}
+```
+
+> **예시: Standalone Component**
+
+```typescript
+import { Component } from "@angular/core";
+@Component({
+  standalone: true,
+  selector: "app-hello",
+  template: "<h1>Hello Standalone!</h1>",
+})
+export class HelloComponent {}
+```
+
+---
+
 > **이 문서는 Angular 17+ 기준의 최신 실전/실무 지식과 예시, 공식 스타일 가이드, 최신 API(예: Signal, Content Projection 등)까지 반영합니다.**
 > 최신 Angular 공식 문서, 스타일 가이드, 실전 시나리오, 고급 기능(성능 최적화, RxJS, 테스트, 데코레이터 등)까지 모두 포함되어 있습니다.
 
@@ -57,6 +90,21 @@
   - [Angular 공식 폼 가이드](https://angular.kr/guide/forms-overview)
 
 ## 실전 팁
+
+### Signal vs RxJS 비교
+
+| 구분             | Signal | RxJS Observable |
+| ---------------- | ------ | --------------- |
+| 상태 추적        | O      | O               |
+| 비동기 스트림    | X      | O               |
+| 간단한 상태      | O      | △               |
+| 고급 연산자      | X      | O               |
+| Angular 17+ 공식 | O      | O(계속 지원)    |
+
+> **언제 Signal, 언제 RxJS?**
+>
+> - Signal: 단순/동기 상태, UI 반응성, computed/effect 활용
+> - RxJS: 비동기, 이벤트 스트림, 복잡한 상태/연산자 필요 시
 
 > **Angular 17+ 실무에서 자주 쓰는 최신 실전 팁과 패턴을 정리했습니다.**
 
@@ -91,7 +139,19 @@
 - [Angular 스타일 가이드](https://angular.io/guide/styleguide)
 - [Tour of Heroes 튜토리얼](https://angular.kr/tutorial)
 
+* [Angular 17+ 공식 Signal 문서](https://angular.dev/reference/signals)
+* [Angular Standalone Component 공식](https://angular.dev/reference/standalone-components)
+* [Angular Control Flow 공식](https://angular.dev/reference/templates/control-flow)
+* [Angular SSR/Hydration 공식](https://angular.dev/guide/ssr)
+
+- [Angular 공식 문서](https://angular.kr/)
+- [RxJS 공식 문서](https://rxjs.dev/)
+- [Angular 스타일 가이드](https://angular.io/guide/styleguide)
+- [Tour of Heroes 튜토리얼](https://angular.kr/tutorial)
+
 ## Angular 주요 개념 ↔️ 실제 코드 예시 매핑
+
+---
 
 > **아래 예시들은 모두 Angular 17+ 기준의 최신 문법, 실전 패턴, 공식 스타일 가이드에 맞춰 작성되었습니다.**
 
@@ -118,6 +178,13 @@
 
 - **개념**: 관련 컴포넌트, 서비스, 디렉티브, 파이프를 하나의 단위로 묶어 관리하는 Angular의 핵심 구조입니다. 루트 모듈(AppModule)과 기능별 모듈(Feature Module)로 나뉩니다.
 - **실전 팁**: 기능별로 모듈을 분리하면 코드 관리와 Lazy Loading이 쉬워집니다. 공통 모듈(CommonModule), 공유 모듈(SharedModule) 패턴을 활용하세요.
+- **주요 속성 용도**:
+
+  - `declarations`: 이 모듈에서 선언(등록)하는 컴포넌트, 디렉티브, 파이프 목록입니다. (이 모듈에서만 사용 가능)
+  - `imports`: 이 모듈에서 사용할 외부 모듈(공통 모듈, 라우팅 모듈 등) 목록입니다.
+  - `providers`: 이 모듈에서 사용할 서비스(의존성 주입) 목록입니다. (여기에 등록하면 이 모듈 범위에서 싱글턴)
+  - `bootstrap`: 앱 시작 시 부트스트랩(최상위)할 컴포넌트(일반적으로 AppComponent)
+
 - **실제 코드**:  
   `src/app/app.module.ts`
   ```typescript
@@ -126,10 +193,10 @@
   import { AppComponent } from "./app.component";
   import { MemberListComponent } from "./members/member-list/member-list.component";
   @NgModule({
-    declarations: [AppComponent, MemberListComponent],
-    imports: [BrowserModule],
-    providers: [],
-    bootstrap: [AppComponent],
+    declarations: [AppComponent, MemberListComponent], // 이 모듈에서 사용하는 컴포넌트/디렉티브/파이프 등록
+    imports: [BrowserModule], // 외부 모듈(공통, 라우팅 등) 등록
+    providers: [], // 서비스(의존성 주입) 등록
+    bootstrap: [AppComponent], // 앱 시작 시 부트스트랩할 컴포넌트
   })
   export class AppModule {}
   ```
@@ -154,21 +221,23 @@
   }
   ```
 
-  import { AccountService } from './\_services/account.service';
-  constructor(private accountService: AccountService) {}
-
-  ```
-
-  ```
+```typescript
+import { AccountService } from './_services/account.service';
+constructor(private accountService: AccountService) {}
+```
 
 ### 3. BehaviorSubject/Observable
 
 - **개념**:
 
-  - **Observable**은 Angular에서 비동기 데이터(HTTP 응답, 이벤트, 상태 등)를 스트림 형태로 다루는 핵심 개념입니다. RxJS의 Observable은 구독(subscribe) 방식으로 데이터를 전달하며, 여러 연산자(map, filter, switchMap 등)로 데이터 흐름을 조작할 수 있습니다.
-  - **BehaviorSubject**는 RxJS의 Subject 중 하나로, 구독 시 항상 최신 값을 즉시 전달(초기값 필수)하며, 여러 컴포넌트/서비스 간 상태 공유에 자주 사용됩니다. next()로 값을 변경하고, asObservable()로 외부에 읽기 전용 스트림을 제공합니다.
+  - **Observable**: Angular에서 비동기 데이터(HTTP 응답, 이벤트, 상태 등)를 스트림 형태로 다루는 핵심 개념입니다. RxJS의 Observable은 구독(subscribe) 방식으로 데이터를 전달하며, 여러 연산자(map, filter, switchMap 등)로 데이터 흐름을 조작할 수 있습니다.
+  - **Subject / BehaviorSubject**: RxJS의 Subject 계열은 "보내기(next())"와 "구독(subscribe())" 모두 가능한 멀티캐스트 스트림입니다. BehaviorSubject는 항상 최신 값을 기억(초기값 필수)하며, 구독 시 즉시 최신값을 전달합니다.
+  - **실전 구분**:
+    - **Subject / BehaviorSubject**: "보내기(next())"와 "구독(subscribe())" 모두 가능 (즉, 발행자와 구독자 역할 모두)
+    - **Observable**: 오직 "구독(subscribe())"만 가능 (next 등 직접 발행 불가)
+    - **실무에서는**: Subject/BehaviorSubject는 내부에서 상태 변경(보내기) 전용, Observable은 외부에 읽기(구독) 전용으로 노출하는 패턴이 가장 안전하고 유지보수에 유리합니다.
 
-- **실전 팁**: BehaviorSubject는 항상 마지막 값을 기억하므로, 초기값이 꼭 필요합니다. 구독 해제(takeUntil, async 파이프 등)를 신경써야 메모리 누수를 막을 수 있습니다.
+- **실전 팁**: BehaviorSubject는 항상 마지막 값을 기억하므로, 로그인/로그아웃, 테마, 알림 등 전역 상태 관리에 적합합니다. 구독 해제(takeUntil, async 파이프 등)를 신경써야 메모리 누수를 막을 수 있습니다.
 
 - **실전 활용 예시**:
 
@@ -442,6 +511,48 @@
   ```
   - 주로 로그인/로그아웃, 폼 제출, 특정 조건에서 이동할 때 활용합니다.
 
+#### Route Resolver (데이터 프리패치)
+
+- **개념**: Route Resolver는 라우팅 시 컴포넌트가 로드되기 전에 필요한 데이터를 미리 비동기로 받아오는 기능입니다. 컴포넌트가 생성되기 전에 데이터를 준비해, 로딩 스피너/깜빡임 없이 UI를 그릴 수 있습니다.
+- **실전 팁**: 상세 페이지, 수정 화면 등 진입 시 반드시 데이터가 준비되어야 하는 경우에 Resolver를 활용하면 UX가 크게 향상됩니다. 에러/로딩 처리도 Resolver에서 일괄 관리할 수 있습니다.
+- **코드 예시**:
+  - **1. Resolver 클래스 작성**
+    ```typescript
+    import { Injectable } from "@angular/core";
+    import { Resolve, ActivatedRouteSnapshot } from "@angular/router";
+    import { MembersService } from "./_services/members.service";
+    import { Observable } from "rxjs";
+    @Injectable({ providedIn: "root" })
+    export class MemberDetailResolver implements Resolve<Member> {
+      constructor(private membersService: MembersService) {}
+      resolve(route: ActivatedRouteSnapshot): Observable<Member> {
+        return this.membersService.getMember(route.paramMap.get("username")!);
+      }
+    }
+    ```
+  - **2. 라우트에 등록**
+    ```typescript
+    const routes: Routes = [
+      {
+        path: "members/:username",
+        component: MemberDetailComponent,
+        resolve: { member: MemberDetailResolver },
+      },
+    ];
+    ```
+  - **3. 컴포넌트에서 데이터 사용**
+    ```typescript
+    import { ActivatedRoute } from "@angular/router";
+    export class MemberDetailComponent implements OnInit {
+      member: Member;
+      constructor(private route: ActivatedRoute) {}
+      ngOnInit() {
+        this.member = this.route.snapshot.data["member"];
+      }
+    }
+    ```
+- **참고**: [Angular 공식 Resolver 가이드](https://angular.kr/guide/router#resolve-guard)
+
 ### 10. Lifecycle Hooks (생명주기 훅)
 
 - **개념**:
@@ -618,6 +729,20 @@
 
 ### 13. Testing (테스팅)
 
+#### 주요 테스트 도구/명령 비교
+
+| 도구/명령  | 용도        | 특징                                |
+| ---------- | ----------- | ----------------------------------- |
+| Jasmine    | 단위/통합   | 기본 프레임워크, describe/it/expect |
+| Karma      | 실행/러너   | 브라우저 기반, Angular CLI 기본     |
+| Jest       | 단위/스냅샷 | 빠름, 스냅샷, Angular/Jest 호환     |
+| Cypress    | E2E         | 실제 브라우저, UI 플로우 검증       |
+| Playwright | E2E         | 멀티 브라우저, 고급 E2E             |
+| ng test    | 단위/통합   | Angular CLI 테스트 명령             |
+| ng e2e     | E2E         | Angular CLI E2E 명령                |
+
+> **실전 팁**: Jest/Cypress/Playwright 등 최신 도구도 적극 활용, 커버리지 측정(`--coverage`), Mock Service Worker, TestBed 환경설정 등 실무 패턴 추가
+
 - **왜 중요한가?**
 
   - Angular는 규모가 커질수록 컴포넌트, 서비스, 파이프, 디렉티브 등 다양한 단위의 테스트가 필수입니다.
@@ -718,6 +843,22 @@
 
 ### 14. 고급 Angular 개념 및 실전 팁
 
+#### 최신 실전 패턴/팁
+
+- **Zone-less**: zone.js 없이 동작, 성능 개선
+- **Hydration/SSR/SSG**: 서버 사이드 렌더링, 정적 사이트 생성, Hydration 지원 강화
+- **환경변수 관리**: `environment.ts` 활용, 빌드 시 자동 치환
+- **빌드 최적화**: `ng build --configuration production`으로 최적화 빌드
+- **API 통신 고급 패턴**: HttpInterceptor, ErrorHandler, Retry, 캐싱 등
+
+#### 공식 문서/실전 블로그 링크
+
+- [Angular 17+ 마이그레이션 가이드](https://update.angular.io/)
+- [Angular 공식 Signal 문서](https://angular.dev/reference/signals)
+- [Angular Standalone Component 공식](https://angular.dev/reference/standalone-components)
+- [Angular Control Flow 공식](https://angular.dev/reference/templates/control-flow)
+- [Angular SSR/Hydration 공식](https://angular.dev/guide/ssr)
+
 > **Angular 17+의 Signal, Content Projection, Standalone Component, 최신 DI/데코레이터, 고급 성능 최적화 등 최신 고급 기능을 모두 다룹니다.**
 
 #### @ViewChild, @ContentChild
@@ -729,13 +870,21 @@
     this.inputRef.nativeElement.focus();
   }
   ```
-- `@ContentChild`: 부모가 <ng-content>로 넘긴 projected content에 접근할 때 사용
+- `@ContentChild`: 부모가 `<ng-content>` 슬롯에 넘긴 DOM/컴포넌트/템플릿(=projected content)을 자식 컴포넌트에서 직접 참조/제어할 때 사용합니다.
+  - 예시: 부모가 `<app-card><span #projected>내용</span></app-card>`처럼 `<ng-content>` 영역에 넘긴 요소를, 자식 컴포넌트에서 `@ContentChild('projected')`로 참조할 수 있습니다.
   ```typescript
+  // 자식 컴포넌트
   @ContentChild('projected') projected: ElementRef;
   ngAfterContentInit() {
-    // projected.nativeElement ...
+    // 부모가 넘긴 <span #projected>...</span>에 접근 가능
+    this.projected.nativeElement.textContent = '변경됨';
   }
   ```
+  ```html
+  <!-- 부모에서 사용 -->
+  <app-card><span #projected>내용</span></app-card>
+  ```
+  - 즉, 부모가 `<ng-content>`로 넘긴 실제 DOM/컴포넌트/템플릿을 자식에서 직접 조작할 수 있게 해주는 기능입니다.
 
 #### @HostBinding, @HostListener
 
