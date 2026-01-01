@@ -106,6 +106,11 @@ public class MessageRepository : IMessageRepository
         return _mapper.Map<IEnumerable<MessageDto>>(messages);
     }
 
+    public async Task<int> GetUnreadCount(string username)
+    {
+        return await _context.Messages.CountAsync(m => m.RecipientUsername == username && m.RecipientDeleted == false && m.DateRead == null);
+    }
+
     public void RemoveConnection(Connection connection)
     {
         _context.Connections.Remove(connection);

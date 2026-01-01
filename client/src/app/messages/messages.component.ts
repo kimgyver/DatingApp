@@ -9,6 +9,7 @@ import { MessageService } from '../_services/message.service';
   styleUrl: './messages.component.css',
 })
 export class MessagesComponent implements OnInit {
+  unreadTotal = 0;
   messages?: Message[];
   pagination?: Pagination;
   container = 'Unread';
@@ -33,6 +34,19 @@ export class MessagesComponent implements OnInit {
           this.loading = false;
         },
       });
+    // Fetch unread count whenever tab is switched
+    this.fetchUnreadCount();
+  }
+
+  fetchUnreadCount() {
+    this.messageService.getUnreadCount().subscribe({
+      next: (res) => {
+        this.unreadTotal = res.count;
+      },
+      error: () => {
+        this.unreadTotal = 0;
+      },
+    });
   }
 
   deleteMessage(id: number) {

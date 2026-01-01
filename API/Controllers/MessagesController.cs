@@ -87,4 +87,12 @@ public class MessagesController : BaseApiController
 
         return BadRequest("Problem deleting message");
     }
+
+    [HttpGet("unread-count")]
+    public async Task<ActionResult<int>> GetUnreadCount()
+    {
+        var username = User.GetUsername();
+        var count = await _uow.MessageRepository.GetUnreadCount(username);
+        return Ok(new { count });
+    }
 }

@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { MemberListComponent } from './members/member-list/member-list.component';
 import { MemberDetailComponent } from './members/member-detail/member-detail.component';
-import { ListsComponent } from './lists/lists.component';
+import { FavouritesComponent } from './favourites/favourites.component';
 import { MessagesComponent } from './messages/messages.component';
 import { AuthGuard } from './_guards/auth.guard';
 import { TestErrorComponent } from './errors/test-error/test-error.component';
@@ -33,7 +33,7 @@ const routes: Routes = [
         component: MemberEditComponent,
         canDeactivate: [preventUnsavedChangesGuard],
       },
-      { path: 'lists', component: ListsComponent },
+      { path: 'favourites', component: FavouritesComponent },
       { path: 'messages', component: MessagesComponent },
       {
         path: 'admin',

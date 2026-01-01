@@ -20,6 +20,10 @@ export class ErrorInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError((error) => {
         if (error) {
+          // status가 200이면 에러로 처리하지 않고 그냥 통과
+          if (error.status === 200) {
+            return next.handle(request);
+          }
           switch (error.status) {
             case 400:
               if (error.error.errors) {

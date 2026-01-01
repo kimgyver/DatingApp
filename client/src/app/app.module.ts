@@ -11,7 +11,7 @@ import { HomeComponent } from './home/home.component';
 import { RegisterComponent } from './register/register.component';
 import { MemberListComponent } from './members/member-list/member-list.component';
 import { MemberDetailComponent } from './members/member-detail/member-detail.component';
-import { ListsComponent } from './lists/lists.component';
+import { FavouritesComponent } from './favourites/favourites.component';
 import { MessagesComponent } from './messages/messages.component';
 import { SharedModule } from './_modules/shared.module';
 import { TestErrorComponent } from './errors/test-error/test-error.component';
@@ -40,7 +40,7 @@ import { ProfileCardModule } from './profile-card/profile-card.module';
     HomeComponent,
     RegisterComponent,
     MemberListComponent,
-    ListsComponent,
+    FavouritesComponent,
     MessagesComponent,
     TestErrorComponent,
     NotFoundComponent,

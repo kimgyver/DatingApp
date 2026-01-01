@@ -988,6 +988,18 @@ constructor(private accountService: AccountService) {}
   - 대규모/복잡한 앱: NgRx, NGXS, Akita 등 상태 관리 라이브러리 사용 고려
   - Signal 기반 상태 관리도 점차 확산 중
 
+#### TypeScript의 get (getter) 활용
+
+- **개념**: `get` 키워드는 클래스에서 읽기 전용 속성(계산된 값)을 정의할 때 사용합니다. 함수처럼 호출하지 않고, 속성처럼 접근할 수 있습니다.
+- **Angular 실전 예시**:
+  ```typescript
+  get unreadCount(): number {
+    return this.messages ? this.messages.filter(m => !m.dateRead).length : 0;
+  }
+  // 사용: this.unreadCount 또는 템플릿에서 {{ unreadCount }}
+  ```
+- **장점**: 템플릿/컴포넌트에서 동적 계산값을 변수처럼 직관적으로 사용할 수 있어 코드가 깔끔해집니다.
+
 ### 15. Performance Improvement (성능 최적화)
 
 > **Angular 17+ 기준의 최신 성능 최적화 기법(Standalone Component, Signal, OnPush, Virtual Scrolling, Web Worker 등)과 공식 가이드 반영**
