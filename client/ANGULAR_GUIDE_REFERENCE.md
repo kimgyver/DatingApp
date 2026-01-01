@@ -779,7 +779,7 @@ constructor(private accountService: AccountService) {}
   - RxJS 연산자는 Observable 스트림의 데이터 흐름을 변환, 필터링, 결합, 제어하는 함수형 도구입니다. Angular에서 비동기 데이터 처리, 상태 관리, 이벤트 처리 등에 필수적으로 사용됩니다.
   - 자주 쓰는 연산자:
     - `map`: 값 변환
-    - `switchMap`: 내부 Observable로 전환(주로 HTTP 요청 체인)
+    - `switchMap`: 스트림(Observable)에서 또 다른 비동기 스트림(예: HTTP 요청)으로 전환하여, 여러 이벤트(파라미터, 입력 등)가 발생할 때마다 새로운 비동기 작업을 연결(체인)하는 데 사용. 이전 스트림의 작업은 자동 취소됨
     - `filter`: 조건에 맞는 값만 통과
     - `take`, `takeUntil`: 구독 횟수/해제 제어
     - `catchError`: 에러 처리
