@@ -582,7 +582,7 @@ constructor(private accountService: AccountService) {}
 - **개념**: 라우팅, canActivate 등
 - **실전 팁**: 라우트 가드는 인증/권한 체크, 데이터 프리패치 등에 활용합니다. 라우트 순서와 와일드카드 경로(\*\*) 위치에 주의하세요.
 
-#### <router-outlet>란?
+#### `<router-outlet>`란?
 
 - **개념**: `<router-outlet>`은 Angular 라우팅 시스템의 핵심 지시자(Directive)로, 현재 URL에 따라 해당하는 컴포넌트의 뷰가 동적으로 삽입되는 "자리 표시자(placeholder)" 역할을 합니다.
 - **실전 팁**:
@@ -778,7 +778,7 @@ constructor(private accountService: AccountService) {}
 
   - RxJS 연산자는 Observable 스트림의 데이터 흐름을 변환, 필터링, 결합, 제어하는 함수형 도구입니다. Angular에서 비동기 데이터 처리, 상태 관리, 이벤트 처리 등에 필수적으로 사용됩니다.
   - 자주 쓰는 연산자:
-    - `map`: 값 변환
+    - `map`: Observable 스트림의 각 값을 원하는 형태로 변환합니다. 단순 값 변환에만 사용하며, 비동기 작업(HTTP 등)을 처리하지 않습니다.
     - `switchMap`: 스트림(Observable)에서 또 다른 비동기 스트림(예: HTTP 요청)으로 전환하여, 여러 이벤트(파라미터, 입력 등)가 발생할 때마다 새로운 비동기 작업을 연결(체인)하는 데 사용. 이전 스트림의 작업은 자동 취소됨
     - `filter`: 조건에 맞는 값만 통과
     - `take`, `takeUntil`: 구독 횟수/해제 제어
