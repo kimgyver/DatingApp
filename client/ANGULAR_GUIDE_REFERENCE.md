@@ -1,35 +1,29 @@
-# 목차 (Table of Contents)
-
-- [폴더 구조](#폴더-구조-clientsrcapp)
-- [Angular 핵심 개념](#angular-핵심-개념)
-- [실전 팁](#실전-팁)
-- [참고 자료](#참고-자료)
-- [각 섹션별 실전 시나리오 & 공식 문서 링크](#각-섹션별-실전-시나리오--공식-문서-링크)
-- [RxJS/폼/테스트의 추가 예시](#rxjs폼테스트의-추가-예시)
-- [Angular 주요 개념 ↔️ 실제 코드 예시 매핑](#angular-주요-개념-️-실제-코드-예시-매핑)
-  - [1. Angular 기본 개념 - 컴포넌트/모듈/라우팅/폼](#1-angular-기본-개념---컴포넌트모듈라우팅폼)
-  - [2. Service & Dependency Injection](#2-service--dependency-injection)
-  - [3. BehaviorSubject/Observable](#3-behaviorsubjectobservable)
-  - [4. Data Binding (데이터 바인딩)](#4-data-binding-데이터-바인딩)
-  - [5. Directive](#5-directive)
-  - [6. Form (Reactive)](#6-form-reactive)
-  - [7. Input/Output & EventEmitter](#7-inputoutput--eventemitter)
-  - [8. Interceptor](#8-interceptor)
-  - [9. Routing & Guards](#9-routing--guards)
-  - [10. Lifecycle Hooks (생명주기 훅)](#10-lifecycle-hooks-생명주기-훅)
-  - [11. RxJS 연산자](#11-rxjs-연산자)
-  - [12. Pipe (파이프)](#12-pipe-파이프)
-  - [13. Testing (테스팅)](#13-testing-테스팅)
-  - [14. 고급 Angular 개념 및 실전 팁](#14-고급-angular-개념-및-실전-팁)
-  - [15. Performance Improvement (성능-최적화)](#15-performance-improvement-성능-최적화)
-  - [16. Angular 데코레이터 개념 및 예시](#16-angular-데코레이터-개념-및-예시)
-  - [17. Angular 상태 관리: 서비스+RxJS vs NgRx/NGXS/Akita](#17-angular-상태-관리-서비스rxjs-vs-ngrxngxsakita)
-  - [18. Angular 17+ 최신 기능 요약](#18-angular-17-최신-기능-요약)
-
 # Angular 클라이언트 구조 및 주요 개념
 
 > **이 문서는 Angular 17+ 기준의 최신 실전/실무 지식과 예시, 공식 스타일 가이드, 최신 API(예: Signal, Content Projection 등)까지 반영합니다.**
 > 최신 Angular 공식 문서, 스타일 가이드, 실전 시나리오, 고급 기능(성능 최적화, RxJS, 테스트, 데코레이터 등)까지 모두 포함되어 있습니다.
+
+# 목차 (Table of Contents)
+
+- [폴더 구조](#폴더-구조-clientsrcapp)
+- [1. Angular 기본 개념 - 컴포넌트/모듈/라우팅/폼](#1-angular-기본-개념---컴포넌트모듈라우팅폼)
+- [2. Service & Dependency Injection](#2-service--dependency-injection)
+- [3. BehaviorSubject/Observable](#3-behaviorsubjectobservable)
+- [4. Data Binding (데이터 바인딩)](#4-data-binding-데이터-바인딩)
+- [5. Directive](#5-directive)
+- [6. Form (Reactive)](#6-form-reactive)
+- [7. Input/Output & EventEmitter](#7-inputoutput--eventemitter)
+- [8. Interceptor](#8-interceptor)
+- [9. Routing & Guards](#9-routing--guards)
+- [10. Lifecycle Hooks (생명주기 훅)](#10-lifecycle-hooks-생명주기-훅)
+- [11. RxJS 연산자](#11-rxjs-연산자)
+- [12. Pipe (파이프)](#12-pipe-파이프)
+- [13. Testing (테스팅)](#13-testing-테스팅)
+- [14. 고급 Angular 개념 및 실전 팁](#14-고급-angular-개념-및-실전-팁)
+- [15. Performance Improvement (성능-최적화)](#15-performance-improvement-성능-최적화)
+- [16. Angular 데코레이터 개념 및 예시](#16-angular-데코레이터-개념-및-예시)
+- [17. Angular 상태 관리: 서비스+RxJS vs NgRx/NGXS/Akita](#17-angular-상태-관리-서비스rxjs-vs-ngrxngxsakita)
+- [18. Angular 17+ 최신 기능 요약](#18-angular-17-최신-기능-요약)
 
 ## 폴더 구조 (client/src/app)
 
