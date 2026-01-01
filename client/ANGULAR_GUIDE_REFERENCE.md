@@ -806,7 +806,9 @@ constructor(private accountService: AccountService) {}
   - **switchMap**: HTTP 요청 체인
     ```typescript
     import { switchMap } from "rxjs";
-    // 시나리오: URL 파라미터가 바뀔 때마다 해당 회원 정보를 API로 불러올 때 사용
+    // params는 URL 파라미터 변경 이벤트 스트림(Observable)
+    // getMember는 실제 HTTP 비동기 작업(Observable 반환)
+    // switchMap을 써야 파라미터가 바뀔 때 이전 HTTP 요청을 자동으로 취소하고, 마지막 요청만 처리함
     this.route.params.pipe(switchMap((params) => this.membersService.getMember(params["username"]))).subscribe((member) => (this.member = member));
     ```
   - **filter, debounceTime**: 실시간 검색
