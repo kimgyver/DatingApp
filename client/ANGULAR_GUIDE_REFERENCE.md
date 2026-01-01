@@ -7,8 +7,7 @@
 - [각 섹션별 실전 시나리오 & 공식 문서 링크](#각-섹션별-실전-시나리오--공식-문서-링크)
 - [RxJS/폼/테스트의 추가 예시](#rxjs폼테스트의-추가-예시)
 - [Angular 주요 개념 ↔️ 실제 코드 예시 매핑](#angular-주요-개념-️-실제-코드-예시-매핑)
-  - [1. Component (컴포넌트)](#1-component-컴포넌트)
-  - [1-1. Module (모듈)](#1-1-module-모듈)
+  - [1. Angular 기본 개념 - 컴포넌트/모듈/라우팅/폼](#1-angular-기본-개념---컴포넌트모듈라우팅폼)
   - [2. Service & Dependency Injection](#2-service--dependency-injection)
   - [3. BehaviorSubject/Observable](#3-behaviorsubjectobservable)
   - [4. Data Binding (데이터 바인딩)](#4-data-binding-데이터-바인딩)
@@ -21,45 +20,13 @@
   - [11. RxJS 연산자](#11-rxjs-연산자)
   - [12. Pipe (파이프)](#12-pipe-파이프)
   - [13. Testing (테스팅)](#13-testing-테스팅)
-  - [14. Performance Improvement (성능-최적화)](#14-performance-improvement-성능-최적화)
-  - [15. 고급 Angular 개념 및 실전 팁](#15-고급-angular-개념-및-실전-팁)
+  - [14. 고급 Angular 개념 및 실전 팁](#14-고급-angular-개념-및-실전-팁)
+  - [15. Performance Improvement (성능-최적화)](#15-performance-improvement-성능-최적화)
   - [16. Angular 데코레이터 개념 및 예시](#16-angular-데코레이터-개념-및-예시)
   - [17. Angular 상태 관리: 서비스+RxJS vs NgRx/NGXS/Akita](#17-angular-상태-관리-서비스rxjs-vs-ngrxngxsakita)
+  - [18. Angular 17+ 최신 기능 요약](#18-angular-17-최신-기능-요약)
 
 # Angular 클라이언트 구조 및 주요 개념
-
-## Angular 17+ 최신 기능 요약
-
-- **Signal**: 간단한 상태 관리, computed/effect 지원, RxJS보다 직관적
-- **Standalone Component**: 모듈 없이 컴포넌트만으로 앱 구성 가능
-- **Control Flow**: @for, @if 등 템플릿 제어문 공식 지원
-- **Zone-less**: zone.js 없이도 동작, 성능 개선
-- **SSR/SSG/Hydration**: 서버 사이드 렌더링, 정적 사이트 생성, Hydration 지원 강화
-- **빌드 최적화**: ng build --configuration production, 환경변수 관리
-
-> **예시: Control Flow**
-
-```html
-@if (isLoading) {
-<div>로딩 중...</div>
-} @for (let item of items; track item.id) {
-<div>{{ item.name }}</div>
-}
-```
-
-> **예시: Standalone Component**
-
-```typescript
-import { Component } from "@angular/core";
-@Component({
-  standalone: true,
-  selector: "app-hello",
-  template: "<h1>Hello Standalone!</h1>",
-})
-export class HelloComponent {}
-```
-
----
 
 > **이 문서는 Angular 17+ 기준의 최신 실전/실무 지식과 예시, 공식 스타일 가이드, 최신 API(예: Signal, Content Projection 등)까지 반영합니다.**
 > 최신 Angular 공식 문서, 스타일 가이드, 실전 시나리오, 고급 기능(성능 최적화, RxJS, 테스트, 데코레이터 등)까지 모두 포함되어 있습니다.
@@ -73,9 +40,7 @@ export class HelloComponent {}
 - **\_forms/**: 커스텀 폼 컴포넌트 (예: TextInput, DatePicker)
 - **\_interceptors/**: HTTP 요청/응답 가로채기(로딩, 에러, JWT 등)
 
-## Angular 핵심 개념
-
-> **최신 Angular(17+) 기준의 개념과 실전 팁을 반영합니다.**
+### 1. Angular 기본 개념 - 컴포넌트/모듈/라우팅/폼
 
 - **컴포넌트(Component)**: UI의 기본 단위. 템플릿(HTML) + 로직(TypeScript) + 스타일(CSS)로 구성
 - **모듈(Module)**: 관련 컴포넌트/서비스/디렉티브/파이프를 묶는 단위. 루트 모듈(AppModule)과 기능별 모듈
@@ -90,73 +55,7 @@ export class HelloComponent {}
 
   - [Angular 공식 폼 가이드](https://angular.kr/guide/forms-overview)
 
-## 실전 팁
-
-### Signal vs RxJS 비교
-
-| 구분             | Signal | RxJS Observable |
-| ---------------- | ------ | --------------- |
-| 상태 추적        | O      | O               |
-| 비동기 스트림    | X      | O               |
-| 간단한 상태      | O      | △               |
-| 고급 연산자      | X      | O               |
-| Angular 17+ 공식 | O      | O(계속 지원)    |
-
-> **언제 Signal, 언제 RxJS?**
->
-> - Signal: 단순/동기 상태, UI 반응성, computed/effect 활용
-> - RxJS: 비동기, 이벤트 스트림, 복잡한 상태/연산자 필요 시
-
-> **Angular 17+ 실무에서 자주 쓰는 최신 실전 팁과 패턴을 정리했습니다.**
-
-- **상태 관리**: 간단한 앱은 서비스+RxJS로 충분, 대규모는 NgRx 등 사용 고려
-
-  - [최신 상태 관리: Signal, NgRx, RxJS 공식 문서](https://angular.dev/reference/signals), [NgRx](https://ngrx.io/)
-
-- **API 통신**: HttpClient + Observable 패턴, 구독(unsubscribe) 관리 주의
-
-  - [Angular 공식 HttpClient 가이드](https://angular.kr/guide/http)
-
-- **컴포넌트 간 통신**: @Input/@Output, 서비스 공유, RxJS Subject 등
-
-  - [최신 컴포넌트 통신 공식 가이드](https://angular.kr/guide/component-interaction)
-
-- **폼 유효성 검사**: 커스텀 Validator, 실시간 체크, 에러 메시지 표시
-
-  - [Reactive Forms 공식 가이드](https://angular.kr/guide/reactive-forms)
-
-- **전역 에러/로딩 처리**: 인터셉터로 일괄 처리
-
-  - [Http Interceptor 공식 가이드](https://angular.kr/guide/http-interceptors)
-
-- **모듈화/재사용**: 공통 컴포넌트, 모듈, 서비스로 분리
-
-  - [Angular 스타일 가이드](https://angular.io/guide/styleguide)
-
-## 참고 자료
-
-- [Angular 공식 문서](https://angular.kr/)
-- [RxJS 공식 문서](https://rxjs.dev/)
-- [Angular 스타일 가이드](https://angular.io/guide/styleguide)
-- [Tour of Heroes 튜토리얼](https://angular.kr/tutorial)
-
-* [Angular 17+ 공식 Signal 문서](https://angular.dev/reference/signals)
-* [Angular Standalone Component 공식](https://angular.dev/reference/standalone-components)
-* [Angular Control Flow 공식](https://angular.dev/reference/templates/control-flow)
-* [Angular SSR/Hydration 공식](https://angular.dev/guide/ssr)
-
-- [Angular 공식 문서](https://angular.kr/)
-- [RxJS 공식 문서](https://rxjs.dev/)
-- [Angular 스타일 가이드](https://angular.io/guide/styleguide)
-- [Tour of Heroes 튜토리얼](https://angular.kr/tutorial)
-
-## Angular 주요 개념 ↔️ 실제 코드 예시 매핑
-
----
-
-> **아래 예시들은 모두 Angular 17+ 기준의 최신 문법, 실전 패턴, 공식 스타일 가이드에 맞춰 작성되었습니다.**
-
-### 1. Component (컴포넌트)
+#### 1-1. Component (컴포넌트)
 
 - **개념**: UI의 기본 단위, @Component 데코레이터, 클래스+템플릿+스타일
 - **실전 팁**: 컴포넌트는 최대한 작고 단일 책임 원칙에 맞게 분리하면 유지보수와 테스트가 쉬워집니다.
@@ -173,7 +72,7 @@ export class HelloComponent {}
   export class MemberEditComponent implements OnInit {
   ```
 
-### 1-1. Module (모듈)
+#### 1-2. Module (모듈)
 
 > **Angular 17+ 기준의 모듈 구조, Lazy Loading, Standalone Component 등 최신 트렌드 반영**
 
@@ -365,7 +264,7 @@ constructor(private accountService: AccountService) {}
 
 ### 4. Data Binding (데이터 바인딩)
 
-### ng-container (구조적 템플릿 컨테이너)
+#### ng-container (구조적 템플릿 컨테이너)
 
 - **개념**: `ng-container`는 실제 DOM 요소를 생성하지 않고, Angular의 구조적 지시자(`*ngIf`, `*ngFor` 등)나 여러 조건/반복을 그룹화할 때 사용하는 가상 컨테이너입니다. 렌더링 결과에 불필요한 div/span 등 추가 DOM이 생기지 않아, 레이아웃에 영향을 주지 않고 템플릿 논리를 깔끔하게 구성할 수 있습니다.
 
@@ -1322,3 +1221,94 @@ constructor(private accountService: AccountService) {}
 - [NgRx 공식 문서](https://ngrx.io/)
 - [NGXS 공식 문서](https://www.ngxs.io/)
 - [Akita 공식 문서](https://datorama.github.io/akita/)
+
+### 18. Angular 17+ 최신 기능 요약
+
+- **Signal**: 간단한 상태 관리, computed/effect 지원, RxJS보다 직관적
+- **Standalone Component**: 모듈 없이 컴포넌트만으로 앱 구성 가능
+- **Control Flow**: @for, @if 등 템플릿 제어문 공식 지원
+- **Zone-less**: zone.js 없이도 동작, 성능 개선
+- **SSR/SSG/Hydration**: 서버 사이드 렌더링, 정적 사이트 생성, Hydration 지원 강화
+- **빌드 최적화**: ng build --configuration production, 환경변수 관리
+
+> **예시: Control Flow**
+
+```html
+@if (isLoading) {
+<div>로딩 중...</div>
+} @for (let item of items; track item.id) {
+<div>{{ item.name }}</div>
+}
+```
+
+> **예시: Standalone Component**
+
+```typescript
+import { Component } from "@angular/core";
+@Component({
+  standalone: true,
+  selector: "app-hello",
+  template: "<h1>Hello Standalone!</h1>",
+})
+export class HelloComponent {}
+```
+
+#### 실전 팁
+
+#### Signal vs RxJS 비교
+
+| 구분             | Signal | RxJS Observable |
+| ---------------- | ------ | --------------- |
+| 상태 추적        | O      | O               |
+| 비동기 스트림    | X      | O               |
+| 간단한 상태      | O      | △               |
+| 고급 연산자      | X      | O               |
+| Angular 17+ 공식 | O      | O(계속 지원)    |
+
+> **언제 Signal, 언제 RxJS?**
+>
+> - Signal: 단순/동기 상태, UI 반응성, computed/effect 활용
+> - RxJS: 비동기, 이벤트 스트림, 복잡한 상태/연산자 필요 시
+
+> **Angular 17+ 실무에서 자주 쓰는 최신 실전 팁과 패턴을 정리했습니다.**
+
+- **상태 관리**: 간단한 앱은 서비스+RxJS로 충분, 대규모는 NgRx 등 사용 고려
+
+  - [최신 상태 관리: Signal, NgRx, RxJS 공식 문서](https://angular.dev/reference/signals), [NgRx](https://ngrx.io/)
+
+- **API 통신**: HttpClient + Observable 패턴, 구독(unsubscribe) 관리 주의
+
+  - [Angular 공식 HttpClient 가이드](https://angular.kr/guide/http)
+
+- **컴포넌트 간 통신**: @Input/@Output, 서비스 공유, RxJS Subject 등
+
+  - [최신 컴포넌트 통신 공식 가이드](https://angular.kr/guide/component-interaction)
+
+- **폼 유효성 검사**: 커스텀 Validator, 실시간 체크, 에러 메시지 표시
+
+  - [Reactive Forms 공식 가이드](https://angular.kr/guide/reactive-forms)
+
+- **전역 에러/로딩 처리**: 인터셉터로 일괄 처리
+
+  - [Http Interceptor 공식 가이드](https://angular.kr/guide/http-interceptors)
+
+- **모듈화/재사용**: 공통 컴포넌트, 모듈, 서비스로 분리
+
+  - [Angular 스타일 가이드](https://angular.io/guide/styleguide)
+
+## 참고 자료
+
+- [Angular 공식 문서](https://angular.kr/)
+- [RxJS 공식 문서](https://rxjs.dev/)
+- [Angular 스타일 가이드](https://angular.io/guide/styleguide)
+- [Tour of Heroes 튜토리얼](https://angular.kr/tutorial)
+
+* [Angular 17+ 공식 Signal 문서](https://angular.dev/reference/signals)
+* [Angular Standalone Component 공식](https://angular.dev/reference/standalone-components)
+* [Angular Control Flow 공식](https://angular.dev/reference/templates/control-flow)
+* [Angular SSR/Hydration 공식](https://angular.dev/guide/ssr)
+
+- [Angular 공식 문서](https://angular.kr/)
+- [RxJS 공식 문서](https://rxjs.dev/)
+- [Angular 스타일 가이드](https://angular.io/guide/styleguide)
+- [Tour of Heroes 튜토리얼](https://angular.kr/tutorial)
