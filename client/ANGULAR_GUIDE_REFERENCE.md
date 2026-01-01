@@ -765,6 +765,13 @@ constructor(private accountService: AccountService) {}
 
 ### 11. RxJS 연산자
 
+> **실무에서 가장 많이 쓰는 연산자는 switchMap입니다.**
+>
+> - switchMap: HTTP 요청, 입력, 라우팅 등에서 이전 작업을 자동 취소하고 마지막 요청만 처리할 때 표준적으로 사용됩니다.
+> - mergeMap: 여러 비동기 작업을 병렬로 모두 처리해야 할 때(예: 여러 파일 업로드, 병렬 API 호출 등) 사용합니다.
+> - concatMap: 여러 비동기 작업을 순차적으로(순서 보장) 처리해야 할 때 사용합니다.
+> - 대부분의 Angular 프로젝트에서는 switchMap이 가장 자주 등장하지만, 병렬/순차 처리가 필요한 경우 mergeMap, concatMap도 반드시 필요합니다.
+
 > **RxJS 7.x 최신 연산자, Angular 17+ Signal과의 연계 활용 등 최신 패턴을 포함합니다.**
 
 - **개념**:
