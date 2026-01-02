@@ -1,3 +1,19 @@
+.messages-badge {
+  top: -8px;
+  right: 15px;
+  background-color: #1976d2;
+  color: #fff;
+  font-size: 0.8rem;
+  min-width: 1.8em;
+  min-height: 1.8em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  box-shadow: 0 0 2px #333;
+  z-index: 2;
+  position: absolute;
+}
 .dropdown-toggle,
 .dropdown-item {
   cursor: pointer;

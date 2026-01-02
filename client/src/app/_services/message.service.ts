@@ -4,7 +4,7 @@ import { getPaginatedResult, getPaginationHeaders } from './paginationHelper';
 import { Message } from '../_models/message';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { User } from '../_models/user';
-import { BehaviorSubject, take } from 'rxjs';
+import { BehaviorSubject, catchError, of, take, tap } from 'rxjs';
 import { Group } from '../_models/group';
 import { environment } from '../../environments/environment';
 
@@ -17,6 +17,9 @@ export class MessageService {
   private hubConnection?: HubConnection;
   private messageThreadSource = new BehaviorSubject<Message[]>([]);
   messageThread$ = this.messageThreadSource.asObservable();
+
+  private unreadTotalSource = new BehaviorSubject<number>(0);
+  unreadTotal$ = this.unreadTotalSource.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -92,5 +95,9 @@ export class MessageService {
     return this.http.get<{ count: number }>(
       this.baseUrl + 'messages/unread-count'
     );
+  }
+
+  emitUnreadTotal(count: number) {
+    this.unreadTotalSource.next(count);
   }
 }

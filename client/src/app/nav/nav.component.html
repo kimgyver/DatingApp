@@ -17,14 +17,21 @@
           >
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/messages" routerLinkActive="active"
-            >Messages</a
+          <a
+            class="nav-link position-relative"
+            routerLink="/messages"
+            routerLinkActive="active"
+            style="padding-right: 2.5em"
           >
-        </li>
-        <li *appHasRole="['Admin', 'Moderator']" class="nav-item">
-          <a class="nav-link" routerLink="/admin" routerLinkActive="active"
-            >Admin</a
-          >
+            Messages
+            <span
+              *ngIf="unreadTotal > 0"
+              class="badge rounded-pill messages-badge"
+            >
+              {{ unreadTotal }}
+              <span class="visually-hidden">unread messages</span>
+            </span>
+          </a>
         </li>
       </ng-container>
       <li class="nav-item">

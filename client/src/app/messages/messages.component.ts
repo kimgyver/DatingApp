@@ -20,6 +20,9 @@ export class MessagesComponent implements OnInit {
   constructor(private messageService: MessageService) {}
 
   ngOnInit(): void {
+    this.messageService.unreadTotal$.subscribe((count) => {
+      this.unreadTotal = count;
+    });
     this.loadMessages();
   }
 
@@ -34,28 +37,32 @@ export class MessagesComponent implements OnInit {
           this.loading = false;
         },
       });
-    // Fetch unread count whenever tab is switched
-    this.fetchUnreadCount();
-  }
-
-  fetchUnreadCount() {
     this.messageService.getUnreadCount().subscribe({
       next: (res) => {
-        this.unreadTotal = res.count;
+        this.messageService.emitUnreadTotal(res.count);
       },
       error: () => {
-        this.unreadTotal = 0;
+        this.messageService.emitUnreadTotal(0);
       },
     });
   }
 
   deleteMessage(id: number) {
     this.messageService.deleteMessage(id).subscribe({
-      next: () =>
+      next: () => {
         this.messages?.splice(
           this.messages.findIndex((m) => m.id === id),
           1
-        ),
+        );
+        this.messageService.getUnreadCount().subscribe({
+          next: (res) => {
+            this.messageService.emitUnreadTotal(res.count);
+          },
+          error: () => {
+            this.messageService.emitUnreadTotal(0);
+          },
+        });
+      },
     });
   }
 

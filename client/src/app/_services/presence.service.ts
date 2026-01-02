@@ -3,6 +3,7 @@ import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { ToastrService } from 'ngx-toastr';
 import { User } from '../_models/user';
 import { BehaviorSubject, take } from 'rxjs';
+import { MessageService } from './message.service';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 
@@ -15,7 +16,11 @@ export class PresenceService {
   private onlineUsersSource = new BehaviorSubject<string[]>([]);
   onlineUsers$ = this.onlineUsersSource.asObservable();
 
-  constructor(private toastr: ToastrService, private router: Router) {}
+  constructor(
+    private toastr: ToastrService,
+    private router: Router,
+    private messageService: MessageService
+  ) {}
 
   createHubConnection(user: User) {
     if (!user || !user.token) {
@@ -64,6 +69,15 @@ export class PresenceService {
         .subscribe(() =>
           this.router.navigateByUrl('/members/' + userName + '?tab=Messages')
         );
+      // Immediately update unread count
+      this.messageService.getUnreadCount().subscribe({
+        next: (res) => {
+          this.messageService.emitUnreadTotal(res.count);
+        },
+        error: () => {
+          this.messageService.emitUnreadTotal(0);
+        },
+      });
     });
 
     this.hubConnection.on(
