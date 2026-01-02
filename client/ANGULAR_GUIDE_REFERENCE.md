@@ -260,12 +260,6 @@ constructor(private accountService: AccountService) {}
 
 #### ng-container (구조적 템플릿 컨테이너)
 
-> **ng-container vs ng-template 차이 간단 비교**
->
-> - `ng-container`: 실제 DOM 요소를 만들지 않는 가상 컨테이너로, 구조적 지시자(`*ngIf`, `*ngFor` 등)와 함께 조건/반복 그룹화에 사용. 템플릿 논리를 깔끔하게 구성할 수 있고, 렌더링 결과에 DOM이 남지 않음.
-> - `ng-template`: 실제로 렌더링되지 않는 템플릿 블록을 정의하며, 필요할 때(예: else, 동적 뷰) Angular가 해당 내용을 DOM에 삽입. 보통 `*ngIf`의 else, ViewContainerRef 등에서 활용.
-> - 요약: `ng-container`는 "조건/반복 그룹화용 가상 컨테이너", `ng-template`은 "나중에 렌더링될 템플릿 블록".
-
 - **개념**: `ng-container`는 실제 DOM 요소를 생성하지 않고, Angular의 구조적 지시자(`*ngIf`, `*ngFor` 등)나 여러 조건/반복을 그룹화할 때 사용하는 가상 컨테이너입니다. 렌더링 결과에 불필요한 div/span 등 추가 DOM이 생기지 않아, 레이아웃에 영향을 주지 않고 템플릿 논리를 깔끔하게 구성할 수 있습니다.
 
 - **주요 용도**:
@@ -289,6 +283,12 @@ constructor(private accountService: AccountService) {}
     <div *ngIf="item.isNew">NEW!</div>
   </ng-container>
   ```
+
+> **ng-container vs ng-template 차이 간단 비교**
+>
+> - `ng-container`: 실제 DOM 요소를 만들지 않는 가상 컨테이너로, 구조적 지시자(`*ngIf`, `*ngFor` 등)와 함께 조건/반복 그룹화에 사용. 템플릿 논리를 깔끔하게 구성할 수 있고, 렌더링 결과에 DOM이 남지 않음.
+> - `ng-template`: 실제로 렌더링되지 않는 템플릿 블록을 정의하며, 필요할 때(예: else, 동적 뷰) Angular가 해당 내용을 DOM에 삽입. 보통 `*ngIf`의 else, ViewContainerRef 등에서 활용.
+> - 요약: `ng-container`는 "조건/반복 그룹화용 가상 컨테이너", `ng-template`은 "나중에 렌더링될 템플릿 블록".
 
 - **팁**:
   - `ng-container`는 렌더링 결과에 아무런 DOM 요소도 남기지 않습니다(개발자 도구에서 확인 가능).
