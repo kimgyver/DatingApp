@@ -25,10 +25,10 @@
     </button>
   </div>
   <div card-info>
-    <span
-      ><i class="fa fa-user me-2"></i> {{ member.knownAs }},
-      {{ member.age }}</span
-    >
+    <span>
+      <i class="fa fa-user me-2"></i> {{ member.knownAs }}, {{ member.age }}
+      <span *ngIf="online" class="online-dot" title="Online"></span>
+    </span>
     <div class="text-muted">{{ member.city }}</div>
   </div>
 </app-profile-card>

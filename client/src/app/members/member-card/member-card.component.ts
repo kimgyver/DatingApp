@@ -1,4 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { PresenceService } from '../../_services/presence.service';
 import { Member } from '../../_models/member';
 import { MembersService } from '../../_services/members.service';
 import { ToastrService } from 'ngx-toastr';
@@ -13,10 +14,19 @@ export class MemberCardComponent {
   @Input() member: Member | undefined;
   @Output() likeToggled = new EventEmitter<Member>();
 
+  online = false;
+
   constructor(
     private memberService: MembersService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private presenceService: PresenceService
   ) {}
+
+  ngOnInit(): void {
+    this.presenceService.onlineUsers$.subscribe((userNames) => {
+      this.online = !!(this.member && userNames.includes(this.member.userName));
+    });
+  }
 
   addLike(member: Member) {
     this.memberService.addLike(member.userName).subscribe({
