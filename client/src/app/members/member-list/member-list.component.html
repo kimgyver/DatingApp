@@ -1,7 +1,7 @@
 <div class="text-center mt-3">
   <h2>Your matches - {{ pagination?.totalItems }}</h2>
 </div>
-{{ userParams | json }}
+<!-- {{ userParams | json }} -->
 <div class="container met-3" *ngIf="userParams">
   <form
     #form="ngForm"
@@ -76,7 +76,7 @@
 </div>
 
 <div class="row">
-  <div class="col-2" *ngFor="let member of members">
+  <div class="col custom-col-5" *ngFor="let member of members; let i = index">
     <app-member-card [member]="member"></app-member-card>
   </div>
   <!-- {{ pagination | json }} -->
