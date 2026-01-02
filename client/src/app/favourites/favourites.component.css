@@ -1,0 +1,13 @@
+/* 5 cards per row: custom width, same as member-list */
+.custom-col-5 {
+  flex: 0 0 20%;
+  max-width: 20%;
+  padding-right: 16px;
+}
+.custom-col-5:nth-child(5n) {
+  padding-right: 0 !important;
+}
+/* Add vertical spacing between filter and cards if needed */
+.row {
+  margin-top: 16px;
+}
