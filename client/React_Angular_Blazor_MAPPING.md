@@ -38,7 +38,7 @@
 | **커스텀 훅/파이프**    | Custom Hook (재사용 로직, DOM 제어는 제한적)                     | Pipe (`@Pipe`)                                            | ValueConverter, Custom Method                  |
 | **폼/입력/유효성검사**  | Controlled/Uncontrolled, Formik, Yup, useForm                    | ngModel, Reactive Forms, Validators                       | bind-Value, EditForm, DataAnnotationsValidator |
 | **DOM 참조/Ref**        | useRef, ref                                                      | @ViewChild, ElementRef                                    | @ref, ElementReference                         |
-| **조건/반복/렌더링**    | {cond && <div/>}, arr.map(), Fragment, Virtual DOM               | *ngIf, *ngFor, <ng-container>, ChangeDetection            | @if, @foreach, @key, Virtualize                |
+| **조건/반복/렌더링**    | {cond && <div/>}, arr.map(), Fragment, Virtual DOM, react-window, react-virtualized | *ngIf, *ngFor, <ng-container>, cdk-virtual-scroll-viewport, *cdkVirtualFor, ChangeDetection | @if, @foreach, @key, <Virtualize>             |
 | **라이프사이클/최적화** | React.memo, useMemo, useCallback (실제 병목일 때만), StrictMode  | OnPush, trackBy, Virtual Scroll, Pure Pipe, Strict DI/AOT | ShouldRender, Virtualize, Hot Reload           |
 | **테스트/테스팅**       | Jest, React Testing Library, Cypress                             | Jasmine, Karma, Protractor                                | xUnit, bUnit, Playwright                       |
 
