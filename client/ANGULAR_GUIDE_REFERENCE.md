@@ -1025,18 +1025,31 @@ constructor(private accountService: AccountService) {}
 
   - Angular 17+는 기본적으로 프로덕션 빌드 시 자동으로 production mode가 활성화됩니다.
 
-- **ChangeDetectionStrategy.OnPush**:
+**ChangeDetectionStrategy.Default vs OnPush**:
 
-  - 컴포넌트의 변경 감지 범위를 "입력(Input) 변경 또는 Observable emit 시"로 한정해 불필요한 렌더링을 줄입니다. 데이터가 자주 바뀌지 않는 UI, 대량 리스트, 성능이 중요한 화면에 필수.
+- Angular의 기본값은 `ChangeDetectionStrategy.Default`입니다. 이 방식은 모든 컴포넌트와 하위 트리를 항상 재검사하여 변경을 감지합니다. 대부분의 경우 별도 지정 없이 잘 동작합니다.
+- 성능 최적화가 필요할 때만 `ChangeDetectionStrategy.OnPush`를 사용합니다. OnPush는 Input 값이나 Observable이 바뀔 때만 해당 컴포넌트만 업데이트해 불필요한 렌더링을 줄입니다.
+- 리스트, 대시보드, 대량 데이터 등에서 OnPush를 쓰면 UI가 훨씬 부드럽고, 성능이 크게 향상됩니다.
 
-  ```typescript
-  import { ChangeDetectionStrategy, Component } from '@angular/core';
-  @Component({
-    ...,
-    changeDetection: ChangeDetectionStrategy.OnPush
-  })
-  export class FastComponent {}
-  ```
+**예시:**
+
+```typescript
+import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+
+@Component({
+  selector: "app-users",
+  templateUrl: "./users.html",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class UsersComponent {
+  @Input() users: User[] = [];
+}
+```
+
+**왜 중요한가?**
+
+- Angular가 불필요하게 모든 컴포넌트를 재검사하지 않고, Input 값이 바뀔 때만 해당 컴포넌트만 업데이트합니다.
+- 결과: 리스트, 대시보드 등에서 UI가 훨씬 부드럽고, 성능이 크게 향상됩니다.
 
 - **trackBy**:
 
