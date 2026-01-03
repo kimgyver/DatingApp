@@ -76,7 +76,10 @@
 </div>
 
 <div class="row">
-  <div class="col custom-col-5" *ngFor="let member of members; let i = index">
+  <div
+    class="col custom-col-5"
+    *ngFor="let member of members; trackBy: trackByMemberId"
+  >
     <app-member-card [member]="member"></app-member-card>
   </div>
   <!-- {{ pagination | json }} -->

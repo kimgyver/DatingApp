@@ -53,4 +53,8 @@ export class MemberListComponent implements OnInit {
       this.loadMembers();
     }
   }
+
+  trackByMemberId(index: number, member: Member) {
+    return member.id;
+  }
 }
