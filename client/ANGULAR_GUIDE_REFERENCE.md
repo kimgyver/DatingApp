@@ -1076,13 +1076,15 @@ constructor(private accountService: AccountService) {}
     }
     ```
   - **동작 모델:**
+    ```
     User Loads App
-    |
-    |-- Core bundle
-    |
-    +-- (나중에) Admin feature
-    |
-    +-- (나중에) Reports feature
+         |
+         |-- Core bundle
+         |
+         +-- (나중에) Admin feature
+         |
+         +-- (나중에) Reports feature
+    ```
   - **장점:**
     - 빠른 앱 시작
     - 번들 크기 감소
