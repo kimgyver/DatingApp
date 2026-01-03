@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { AdminService } from '../../_services/admin.service';
 import { User } from '../../_models/user';
 import { BsModalRef, BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
@@ -18,7 +18,8 @@ export class UserManagementComponent implements OnInit {
 
   constructor(
     private adminService: AdminService,
-    private modalService: BsModalService
+    private modalService: BsModalService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -29,9 +30,27 @@ export class UserManagementComponent implements OnInit {
     this.adminService.getUsersWithRoles().subscribe({
       next: (users) => {
         console.log(users);
-        this.users = users;
+        this.users = [...users]; // 새 배열 할당
+        this.cdr.detectChanges(); // 강제 화면 갱신
       },
     });
+  }
+
+  openEditUserModal(user: User) {
+    const config = {
+      class: 'modal-dialog-centered',
+      initialState: {
+        userName: user.userName,
+        knownAs: user.knownAs,
+        onUserUpdated: () => this.getUsersWithRoles(), // 콜백 전달
+      },
+    };
+
+    this.bsModalRef = this.modalService.show(UserEditModalComponent, config);
+  }
+
+  private arrayEqual(arr1: any[], arr2: any[]) {
+    return JSON.stringify(arr1.sort()) === JSON.stringify(arr2.sort());
   }
 
   openRolesModal(user: User) {
@@ -56,26 +75,6 @@ export class UserManagementComponent implements OnInit {
               next: (roles) => (user.roles = roles),
             });
         }
-      },
-    });
-  }
-
-  private arrayEqual(arr1: any[], arr2: any[]) {
-    return JSON.stringify(arr1.sort()) === JSON.stringify(arr2.sort());
-  }
-
-  openEditUserModal(user: User) {
-    const config = {
-      class: 'modal-dialog-centered',
-      initialState: {
-        userName: user.userName,
-      },
-    };
-
-    this.bsModalRef = this.modalService.show(UserEditModalComponent, config);
-    this.bsModalRef.onHide?.subscribe({
-      next: () => {
-        this.getUsersWithRoles();
       },
     });
   }

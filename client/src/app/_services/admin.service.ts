@@ -30,11 +30,12 @@ export class AdminService {
   updateUserNameAndPassword(
     currentUserName: string,
     newUserName: string,
-    newPassword: string
+    newPassword: string,
+    newKnownAs: string
   ) {
     return this.http.post(
       this.baseUrl + 'admin/update-user/' + currentUserName,
-      { newUserName, newPassword }
+      { newUserName, newPassword, newKnownAs }
     );
   }
 }

@@ -26,6 +26,7 @@ public class AdminController : BaseApiController
             {
                 u.Id,
                 u.UserName,
+                KnownAs = u.KnownAs,
                 Roles = u.UserRoles.Select(r => r.Role.Name).ToList()
             })
             .ToListAsync();
@@ -83,6 +84,13 @@ public class AdminController : BaseApiController
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var result = await _userManager.ResetPasswordAsync(user, token, updateUserDto.NewPassword);
             if (!result.Succeeded) return BadRequest(result.Errors);
+        }
+
+        // Update KnownAs if provided
+        var trimmedNewKnownAs = (updateUserDto.NewKnownAs ?? string.Empty).Trim();
+        if (!string.IsNullOrEmpty(trimmedNewKnownAs) && trimmedNewKnownAs != user.KnownAs)
+        {
+            user.KnownAs = trimmedNewKnownAs;
         }
 
         var updateResult = await _userManager.UpdateAsync(user);

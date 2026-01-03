@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { AdminService } from '../../_services/admin.service';
@@ -9,9 +10,11 @@ import { ToastrService } from 'ngx-toastr';
   templateUrl: './user-edit-modal.component.html',
   styleUrl: './user-edit-modal.component.css',
 })
-export class UserEditModalComponent implements OnInit {
+export class UserEditModalComponent implements OnInit, OnDestroy {
+  private onHideSub?: Subscription;
   userName = '';
   editForm: FormGroup = new FormGroup({});
+  isCancelled: boolean = false;
 
   constructor(
     public bsModalRef: BsModalRef,
@@ -22,6 +25,16 @@ export class UserEditModalComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeForm();
+    // Subscribe to modal hide event
+    this.onHideSub = this.bsModalRef.onHide?.subscribe(() => {
+      if (!this.isCancelled && (this as any).onUserUpdated) {
+        (this as any).onUserUpdated();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.onHideSub?.unsubscribe();
   }
 
   initializeForm() {
@@ -29,6 +42,7 @@ export class UserEditModalComponent implements OnInit {
       newUserName: [''],
       newPassword: [''],
       confirmPassword: [''],
+      newKnownAs: [''],
     });
   }
 
@@ -58,13 +72,17 @@ export class UserEditModalComponent implements OnInit {
   }
 
   submit() {
-    const { newUserName, newPassword } = this.editForm.value;
+    this.isCancelled = false; // Mark as not cancelled on successful submit
+    const { newUserName, newPassword, newKnownAs } = this.editForm.value;
     const usernameProvided = newUserName && newUserName.trim() !== '';
     const passwordProvided = this.isPasswordProvided();
+    const knownAsProvided = newKnownAs && newKnownAs.trim() !== '';
 
     // At least one must be provided
-    if (!usernameProvided && !passwordProvided) {
-      this.toastr.error('Please provide username or password to update');
+    if (!usernameProvided && !passwordProvided && !knownAsProvided) {
+      this.toastr.error(
+        'Please provide username, password, or KnownAs to update'
+      );
       return;
     }
 
@@ -108,12 +126,14 @@ export class UserEditModalComponent implements OnInit {
 
     // Use new username if provided, otherwise keep current username
     const finalUserName = usernameProvided ? newUserName.trim() : this.userName;
+    const finalKnownAs = knownAsProvided ? newKnownAs.trim() : '';
 
     this.adminService
       .updateUserNameAndPassword(
         this.userName,
         finalUserName,
-        newPassword || ''
+        newPassword || '',
+        finalKnownAs
       )
       .subscribe({
         next: () => {
@@ -128,6 +148,7 @@ export class UserEditModalComponent implements OnInit {
   }
 
   cancel() {
+    this.isCancelled = true;
     this.bsModalRef.hide();
   }
 }

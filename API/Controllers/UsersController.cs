@@ -27,7 +27,18 @@ public class UsersController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<PagedList<MemberDto>>> GetUsers([FromQuery] UserParams userParams)
     {
-        var currentUser = await _uow.UserRepository.GetUserByUsernameAsync(User.GetUsername());
+        var currentUserName = User.GetUsername();
+        if (string.IsNullOrEmpty(currentUserName))
+        {
+            return BadRequest("Current user name is null or empty.");
+        }
+
+        var currentUser = await _uow.UserRepository.GetUserByUsernameAsync(currentUserName);
+        if (currentUser == null)
+        {
+            return NotFound("Current user not found.");
+        }
+
         userParams.CurrentUsername = currentUser.UserName;
         if (string.IsNullOrEmpty(userParams.Gender))
         {
