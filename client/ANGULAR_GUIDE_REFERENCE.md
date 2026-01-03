@@ -1065,7 +1065,28 @@ constructor(private accountService: AccountService) {}
 
 - **Lazy Loading**:
 
-  - 라우트별로 코드를 분할해(코드 스플리팅) 실제로 필요한 시점(=해당 라우트로 이동할 때)에만 모듈을 로드합니다. 즉, 사용자가 특정 경로로 처음 진입할 때 그때서야 관련 코드가 네트워크로 로드됩니다. 초기 로딩 속도 개선, 대규모 앱에서 필수.
+  - Lazy Loading은 앱의 초기 로딩 시점에 꼭 필요한 코드만 먼저 로드하고, 나머지 기능(모듈)은 사용자가 해당 경로로 이동할 때 비로소 네트워크로 불러오는 방식입니다.
+  - 라우트별로 코드를 분할(코드 스플리팅)해, 실제로 해당 경로로 이동할 때에만 관련 모듈을 네트워크로 로드합니다.
+  - 예시:
+    ```typescript
+    {
+      path: 'admin',
+      loadChildren: () => import('./admin/admin.module')
+        .then(m => m.AdminModule)
+    }
+    ```
+  - **동작 모델:**
+    User Loads App
+    |
+    |-- Core bundle
+    |
+    +-- (나중에) Admin feature
+    |
+    +-- (나중에) Reports feature
+  - **장점:**
+    - 빠른 앱 시작
+    - 번들 크기 감소
+    - 사용자 경험(UX) 향상
 
 - **Preloading**:
 
