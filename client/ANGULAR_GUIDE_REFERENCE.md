@@ -1028,10 +1028,10 @@ constructor(private accountService: AccountService) {}
 **ChangeDetectionStrategy.Default vs OnPush**:
 
 - Angular의 기본값은 `ChangeDetectionStrategy.Default`입니다. 이 방식은 모든 컴포넌트와 하위 트리를 항상 재검사하여 변경을 감지합니다. 대부분의 경우 별도 지정 없이 잘 동작합니다.
-- 성능 최적화가 필요할 때만 `ChangeDetectionStrategy.OnPush`를 사용합니다. OnPush는 Input 값이나 Observable이 바뀔 때만 해당 컴포넌트만 업데이트해 불필요한 렌더링을 줄입니다.
+- 성능 최적화가 필요할 때만 `ChangeDetectionStrategy.OnPush`를 사용합니다. OnPush는 Input 값이나 Observable이 바뀔(emit) 때만 해당 컴포넌트만 업데이트해 불필요한 렌더링을 줄입니다.
 - 리스트, 대시보드, 대량 데이터 등에서 OnPush를 쓰면 UI가 훨씬 부드럽고, 성능이 크게 향상됩니다.
 
-**예시:**
+- **예시:**
 
 ```typescript
 import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
@@ -1046,10 +1046,10 @@ export class UsersComponent {
 }
 ```
 
-**왜 중요한가?**
+- 왜 중요한가?
 
-- Angular가 불필요하게 모든 컴포넌트를 재검사하지 않고, Input 값이 바뀔 때만 해당 컴포넌트만 업데이트합니다.
-- 결과: 리스트, 대시보드 등에서 UI가 훨씬 부드럽고, 성능이 크게 향상됩니다.
+  - Angular가 불필요하게 모든 컴포넌트를 재검사하지 않고, Input 값이 바뀔 때만 해당 컴포넌트만 업데이트합니다.
+  - 결과: 리스트, 대시보드 등에서 UI가 훨씬 부드럽고, 성능이 크게 향상됩니다.
 
 - **trackBy**:
 
