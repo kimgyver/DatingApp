@@ -636,6 +636,7 @@ constructor(private accountService: AccountService) {}
     ```
 
   - **@Input 값 변화 감지**
+
     ```typescript
     // 시나리오: 부모 컴포넌트에서 전달받은 @Input 값이 변경될 때마다 특정 로직을 실행
     export class ChildComponent implements OnChanges {
@@ -647,6 +648,21 @@ constructor(private accountService: AccountService) {}
       }
     }
     ```
+
+  - **@Input() setter로 값 변화 감지**
+    > ngOnChanges와 동일하게, @Input() setter를 사용해 값이 바뀔 때마다 로직을 실행할 수 있습니다. 예를 들어, 입력값에 따라 파생 데이터를 갱신할 때 유용합니다.
+    ```typescript
+    export class ChildComponent {
+      private _user!: User;
+      @Input() set user(value: User) {
+        this._user = value;
+        this.fullName = `${value.first} ${value.last}`;
+      }
+      fullName = "";
+    }
+    ```
+    <!-- 템플릿 예시 -->
+    <span>{{ fullName }}</span>
   - **DOM 접근**
     ```typescript
     // 시나리오: 뷰가 렌더링된 후 특정 DOM 요소에 포커스를 주거나, 외부 라이브러리와 연동할 때 사용
@@ -984,6 +1000,24 @@ constructor(private accountService: AccountService) {}
   const double = computed(() => count() * 2);
   effect(() => console.log(count()));
   count.set(1);
+  ```
+
+  > **실전 팁**: Signals는 컴포넌트/로컬 UI 상태 관리에, RxJS는 비동기/스트림 처리에 각각 최적화되어 있습니다. 두 가지를 함께 쓰면 복잡한 상태와 비동기 흐름을 깔끔하게 분리할 수 있습니다.
+
+  - **Signals**: 로컬 UI 상태, 즉각적 반응성, 간단한 파생값(computed) 관리에 적합
+  - **RxJS**: 서버 데이터, 비동기 이벤트, 스트림/멀티캐스트, 외부 소스와의 연동에 강점
+
+  이 조합(Signals + RxJS)은 Angular 17+에서 가장 강력한 상태/비동기 관리 패턴 중 하나입니다. (이 mix → chef’s kiss)
+
+  ```typescript
+  import { signal, effect } from "@angular/core";
+  import { fromEvent } from "rxjs";
+
+  const count = signal(0);
+  effect(() => console.log("count:", count()));
+
+  // RxJS로 외부 이벤트 구독
+  fromEvent(document, "click").subscribe(() => count.set(count() + 1));
   ```
 
   - Signal은 아직 RxJS와 혼용되는 과도기적 단계이므로, 공식 문서와 마이그레이션 가이드 참고
