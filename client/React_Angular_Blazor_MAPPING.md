@@ -228,7 +228,7 @@ protected override async Task OnParametersSetAsync()
 
 ### 추가 FAQ
 
-**Q. React에서 state를 직접 변경하면 안 되는 이유는?**  
+**Q. React에서 state를 직접 변경하면 안 되는 이유는?**
 A. 불변성 기반 변경 감지(shallow compare)라 mutate 시 UI가 안 바뀌거나 버그가 납니다. map/filter/spread로 새 참조를 만드세요.
 
 **Q. Prop drilling이란?**  
